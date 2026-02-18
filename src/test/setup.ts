@@ -28,5 +28,12 @@ vi.mock('webextension-polyfill', () => ({
         scripting: {
             executeScript: vi.fn().mockResolvedValue([]),
         },
+        storage: {
+            session: {
+                get: vi.fn(),
+                set: vi.fn(),
+                remove: vi.fn(),
+            }
+        },
     },
 }));

@@ -85,7 +85,7 @@ describe('BackgroundManager', () => {
 
         describe('GET_STATUS', () => {
             it('should return status of active tab', async () => {
-                mockSessionManager.get.mockReturnValue('active');
+                mockSessionManager.get.mockResolvedValue('active');
                 const response = await sendMessage({ type: 'GET_STATUS' });
                 
                 expect(mockBrowser.tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
@@ -102,7 +102,7 @@ describe('BackgroundManager', () => {
 
         describe('TOGGLE_SESSION', () => {
             it('should activate session if currently inactive', async () => {
-                mockSessionManager.get.mockReturnValue('inactive');
+                mockSessionManager.get.mockResolvedValue('inactive');
                 const response = await sendMessage({ type: 'TOGGLE_SESSION' });
 
                 expect(mockInjectContentScript).toHaveBeenCalledWith(mockTabId);
@@ -110,7 +110,7 @@ describe('BackgroundManager', () => {
             });
 
             it('should deactivate session if currently active', async () => {
-                mockSessionManager.get.mockReturnValue('active');
+                mockSessionManager.get.mockResolvedValue('active');
                 const response = await sendMessage({ type: 'TOGGLE_SESSION' });
 
                 expect(mockBrowser.tabs.sendMessage).toHaveBeenCalledWith(mockTabId, { type: 'RELEASE_LOCK' });
@@ -118,7 +118,7 @@ describe('BackgroundManager', () => {
             });
 
             it('should handle deactivation error', async () => {
-                mockSessionManager.get.mockReturnValue('active');
+                mockSessionManager.get.mockResolvedValue('active');
                 mockBrowser.tabs.sendMessage.mockRejectedValue(new Error('Failed'));
                 
                 await sendMessage({ type: 'TOGGLE_SESSION' });
@@ -129,7 +129,7 @@ describe('BackgroundManager', () => {
 
             it('should handle activation error', async () => {
                 vi.spyOn(console, 'error').mockImplementation(() => {});
-                mockSessionManager.get.mockReturnValue('inactive');
+                mockSessionManager.get.mockResolvedValue('inactive');
                 vi.mocked(injectContentScript).mockRejectedValue(new Error('Injection failed'));
 
                 const response = await sendMessage({ type: 'TOGGLE_SESSION' });
@@ -138,22 +138,45 @@ describe('BackgroundManager', () => {
                 expect(updateBadge).toHaveBeenCalledWith(mockTabId, 'error');
                 expect(response.status).toBe('error');
             });
+
+            it('should prevent concurrent toggles while processing', async () => {
+                mockSessionManager.get.mockResolvedValue('inactive');
+                
+                let resolveInjection: (value: void) => void;
+                const injectionPromise: any = new Promise<void>((resolve) => {
+                    resolveInjection = resolve;
+                });
+                mockInjectContentScript.mockReturnValue(injectionPromise);
+
+                const firstToggle = sendMessage({ type: 'TOGGLE_SESSION' });
+
+                const secondToggleResponse = await sendMessage({ type: 'TOGGLE_SESSION' });
+
+                expect(secondToggleResponse).toBeUndefined();
+                expect(mockInjectContentScript).toHaveBeenCalledTimes(1);
+
+                resolveInjection!(undefined);
+                await firstToggle;
+
+                await sendMessage({ type: 'TOGGLE_SESSION' });
+                expect(mockInjectContentScript).toHaveBeenCalledTimes(2);
+            });
         });
         })
 
         describe("handleTabUpdated", () => {
 
-        it('should remove session and update badge on tab navigation when loading', () => {
+        it('should remove session and update badge on tab navigation when loading', async () => {
             const onUpdated = mockBrowser.tabs.onUpdated.addListener.mock.calls[0][0];
-            onUpdated(mockTabId, { status: 'loading' }, mockTab);
+            await onUpdated(mockTabId, { status: 'loading' }, mockTab);
             
             expect(mockSessionManager.delete).toHaveBeenCalledWith(mockTabId);
             expect(updateBadge).toHaveBeenCalledWith(mockTabId, 'inactive');
         });
 
-        it('should do nothing if tab isn\'t loading', () => {
+        it('should do nothing if tab isn\'t loading', async () => {
             const onUpdated = mockBrowser.tabs.onUpdated.addListener.mock.calls[0][0];
-            onUpdated(mockTabId, { status: 'complete' }, mockTab);
+            await onUpdated(mockTabId, { status: 'complete' }, mockTab);
             
             expect(mockSessionManager.delete).not.toHaveBeenCalled();
             expect(updateBadge).not.toHaveBeenCalled();
@@ -161,9 +184,9 @@ describe('BackgroundManager', () => {
         })
 
         describe('handleTabRemoved', () => {
-            it('should remove session on tab remove', () => {
+            it('should remove session on tab remove', async () => {
                 const onRemoved = mockBrowser.tabs.onRemoved.addListener.mock.calls[0][0];
-                onRemoved(mockTabId, {} as browser.Tabs.OnRemovedRemoveInfoType);
+                await onRemoved(mockTabId, {} as browser.Tabs.OnRemovedRemoveInfoType);
                 expect(mockSessionManager.delete).toHaveBeenCalledWith(mockTabId);
             });
         });

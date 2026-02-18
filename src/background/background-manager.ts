@@ -5,8 +5,8 @@ import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";
 
 export class BackgroundManager {
-
     private isInitialized = false;
+    private isProcessing = false;
 
     constructor(
         private sessionManager: SessionManager = new SessionManager(),
@@ -39,44 +39,52 @@ export class BackgroundManager {
         }
     }
 
-    private handleStatusUpdate( status: LockStatus, tabId?: number,) {
+    private async handleStatusUpdate( status: LockStatus, tabId?: number,) {
         if (!tabId) return;
 
         if (status === "inactive") {
-            this.sessionManager.delete(tabId);
+            await this.sessionManager.delete(tabId);
         } else {
-            this.sessionManager.set(tabId, status);
+            await this.sessionManager.set(tabId, status);
         }
         updateBadge(tabId, status);
     }
 
     private async handleGetStatus() {
         const activeTabId = await this.getActiveTabId();
-        if (activeTabId) return { status: this.sessionManager.get(activeTabId) };
-        return { status: "inactive" };
+        if (!activeTabId) return { status: "inactive" };
+
+        const status = await this.sessionManager.get(activeTabId);
+        return { status };
     }
 
     private async handleToggleSession() {
+if (this.isProcessing) return; 
+    this.isProcessing = true;
         const activeTabId = await this.getActiveTabId();
         if (!activeTabId) return;
 
-        const currentStatus = this.sessionManager.get(activeTabId);
+        const currentStatus = await this.sessionManager.get(activeTabId);
 
         if (currentStatus === "active") {
             try {
                 await browser.tabs.sendMessage(activeTabId, { type: "RELEASE_LOCK" });
             } catch (e) {
-                this.sessionManager.delete(activeTabId);
+                await this.sessionManager.delete(activeTabId);
                 updateBadge(activeTabId, "inactive");
+            } finally {
+                this.isProcessing = false;
             }
         } else {
             try {
                 await injectContentScript(activeTabId);
             } catch (e: any) {
                 console.error("Failed to inject script:", e);
-                this.sessionManager.set(activeTabId, "error");
+                await this.sessionManager.set(activeTabId, "error");
                 updateBadge(activeTabId, "error");
                 return { status: "error", error: e.message };
+            } finally {
+                this.isProcessing = false;
             }
         }
         return { status: "pending" };
@@ -87,16 +95,16 @@ export class BackgroundManager {
         return tabs[0]?.id;
     }
 
-    private handleTabUpdated(tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType) {
+    private async handleTabUpdated(tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType) {
         if (changeInfo.status !== 'loading') return
 
-        this.sessionManager.delete(tabId);
+        await this.sessionManager.delete(tabId);
         updateBadge(tabId, "inactive");
     }
 
     
-    private handleTabRemoved(tabId: number) {
-        this.sessionManager.delete(tabId);
+    private async handleTabRemoved(tabId: number) {
+        await this.sessionManager.delete(tabId);
     }
 
 }
