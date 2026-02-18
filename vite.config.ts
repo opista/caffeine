@@ -22,6 +22,7 @@ export default defineConfig({
     webExtension({
       manifest: generateManifest,
       additionalInputs: ["src/content/index.ts"],
+      browser: process.env.TARGET || "chrome",
     }),
   ],
 });
