@@ -1,11 +1,13 @@
-import browser from "webextension-polyfill";
 import { ExtensionMessage } from "../types";
+import browser from "webextension-polyfill";
+import { showToast } from "./show-toast";
 
 export class WakeLockManager {
-    private wakeLock: WakeLockSentinel | null = null;
+    private isAndroid = false;
     private isEnabled = false;
-
     private isSupported = false;
+    private platformInitialized = false;
+    private wakeLock: WakeLockSentinel | null = null;
 
     constructor() {
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
@@ -17,15 +19,32 @@ export class WakeLockManager {
         }
     }
 
-    public start() {
+    private async initPlatform() {
+        if (this.platformInitialized) return;
+        
+        try {
+            const response = await browser.runtime.sendMessage({ type: "GET_PLATFORM_INFO" });
+            if (response && response.os) {
+                this.isAndroid = response.os === 'android';
+            }
+        } finally {
+            this.platformInitialized = true;
+        }
+    }
+
+    public async start() {
         if (!this.isSupported) {
              this.sendMessage({ type: "STATUS_UPDATE", status: "error", error: "Wake Lock API not supported" });
              return;
         }
 
+        await this.initPlatform();
         this.isEnabled = true;
+
         this.requestWakeLock();
+        
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
+        window.addEventListener('focus', this.handleVisibilityChange);
         browser.runtime.onMessage.addListener(this.handleMessage);
     }
 
@@ -33,6 +52,7 @@ export class WakeLockManager {
         this.isEnabled = false;
         await this.releaseWakeLock();
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+        window.removeEventListener('focus', this.handleVisibilityChange);
         browser.runtime.onMessage.removeListener(this.handleMessage);
         this.sendMessage({ type: "STATUS_UPDATE", status: "inactive" });
     }
@@ -40,18 +60,30 @@ export class WakeLockManager {
     private async requestWakeLock() {
         if (!this.isEnabled) return;
 
+        if (!window.isSecureContext) {
+            this.sendMessage({ type: "STATUS_UPDATE", status: "error", error: "Wake Lock requires a secure (HTTPS) connection" });
+            return;
+        }
+
         try {
             this.wakeLock = await navigator.wakeLock.request('screen');
             this.wakeLock?.addEventListener('release', this.handleLockRelease);
             this.sendMessage({ type: "STATUS_UPDATE", status: "active" });
+            if (this.isAndroid) showToast("☕ Caffeine active", "success");
         } catch (err: any) {
-            let errorMsg = "Unknown error";
-            if (err.name === 'NotAllowedError') {
-                errorMsg = "System blocked wake lock (Check Battery Saver)";
-            } else if (err.name === 'NotSupportedError') {
-                 errorMsg = "Device does notq support wake lock";
+            // On Android, the popup steals focus from the page, causing
+            // NotAllowedError on the initial request. The focus listener
+            // will retry when the popup closes and focus returns.
+            if (err.name === 'NotAllowedError' && this.isAndroid && !this.wakeLock) {
+                return;
             }
+            const errorMsg = err.name === 'NotAllowedError'
+                ? "System blocked wake lock (check Battery Saver)"
+                : err.name === 'NotSupportedError'
+                    ? "Device does not support wake lock"
+                    : "Unknown error";
             this.sendMessage({ type: "STATUS_UPDATE", status: "error", error: errorMsg });
+            if (this.isAndroid) showToast("⚠️ " + errorMsg, "error");
         }
     }
 
@@ -69,7 +101,7 @@ export class WakeLockManager {
     }
 
     private handleLockRelease() {
-        if (this.isEnabled) {
+        if (!this.isEnabled) {
              this.sendMessage({ type: "STATUS_UPDATE", status: "inactive" });
         }
         this.wakeLock = null;
@@ -82,8 +114,7 @@ export class WakeLockManager {
         }
     }
 
-
     private sendMessage(msg: ExtensionMessage) {
-        browser.runtime.sendMessage(msg).catch();
+        browser.runtime.sendMessage(msg).catch(console.error);
     }
 }

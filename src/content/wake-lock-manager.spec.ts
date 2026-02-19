@@ -18,6 +18,11 @@ describe('WakeLockManager', () => {
             value: 'visible',
         });
 
+        Object.defineProperty(window, 'isSecureContext', {
+            configurable: true,
+            value: true,
+        });
+
         releaseMock = vi.fn().mockResolvedValue(undefined);
         addEventListenerMock = vi.fn();
         
@@ -40,6 +45,13 @@ describe('WakeLockManager', () => {
             },
         });
 
+        mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
+            if (msg.type === "GET_PLATFORM_INFO") {
+                return { os: 'linux' };
+            }
+            return undefined;
+        });
+
         wakeLockManager = new WakeLockManager();
     });
 
@@ -48,7 +60,7 @@ describe('WakeLockManager', () => {
     });
 
     it('should request wake lock on start', async () => {
-        wakeLockManager.start();
+        await wakeLockManager.start();
         
         await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
@@ -60,7 +72,7 @@ describe('WakeLockManager', () => {
     });
 
     it('should release wake lock on stop', async () => {
-        wakeLockManager.start();
+        await wakeLockManager.start();
         await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
         await wakeLockManager.stop();
@@ -73,7 +85,7 @@ describe('WakeLockManager', () => {
     });
 
     it('should handle visibility change to hidden', async () => {
-        wakeLockManager.start();
+        await wakeLockManager.start();
         await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
         Object.defineProperty(document, 'visibilityState', {
@@ -87,17 +99,14 @@ describe('WakeLockManager', () => {
     });
 
     it('should re-acquire wake lock when visibility changes to visible', async () => {
-        wakeLockManager.start();
+        await wakeLockManager.start();
         await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
+        // Simulate the lock being released (e.g., tab hidden)
         const releaseCallback = addEventListenerMock.mock.calls[0][1];
         releaseCallback();
-        
-        expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-            type: 'STATUS_UPDATE',
-            status: 'inactive',
-        });
 
+        // Trigger visibility change to re-acquire
         Object.defineProperty(document, 'visibilityState', {
             configurable: true,
             value: 'visible',
@@ -115,7 +124,7 @@ describe('WakeLockManager', () => {
         });
         
         const localManager = new WakeLockManager();
-        localManager.start();
+        await localManager.start();
 
         await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
@@ -129,19 +138,19 @@ describe('WakeLockManager', () => {
     it('should handle wake lock request error', async () => {
         requestMock.mockRejectedValue({ name: 'NotAllowedError', message: 'Permission denied' });
         
-        wakeLockManager.start();
+        await wakeLockManager.start();
 
         await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
         expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
             type: 'STATUS_UPDATE',
             status: 'error',
-            error: 'System blocked wake lock (Check Battery Saver)',
+            error: 'System blocked wake lock (check Battery Saver)',
         });
     });
 
     it('should stop wake lock on RELEASE_LOCK message', async () => {
-        wakeLockManager.start();
+        await wakeLockManager.start();
         await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
         const onMessageListener = mockBrowser.runtime.onMessage.addListener.mock.calls[0][0];

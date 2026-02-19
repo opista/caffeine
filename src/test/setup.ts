@@ -8,13 +8,19 @@ vi.mock('webextension-polyfill', () => ({
                 removeListener: vi.fn(),
             },
             sendMessage: vi.fn().mockResolvedValue(undefined),
+            getPlatformInfo: vi.fn().mockResolvedValue({ os: 'linux', arch: 'x86-64' }),
         },
         tabs: {
+            get: vi.fn().mockResolvedValue({}),
             onRemoved: {
                 addListener: vi.fn(),
                 removeListener: vi.fn(),
             },
             onUpdated: {
+                addListener: vi.fn(),
+                removeListener: vi.fn(),
+            },
+            onActivated: {
                 addListener: vi.fn(),
                 removeListener: vi.fn(),
             },

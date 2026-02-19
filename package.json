@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:firefox": "cross-env TARGET=firefox vite",
+    "dev:firefox:android": "web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir dist --adb-device 192.168.1.39:41095",
     "build": "tsc && vite build",
     "build:firefox": "cross-env TARGET=firefox vite build",
     "test": "vitest"
@@ -30,6 +31,7 @@
     "vite": "^5.0.0",
     "vite-plugin-web-extension": "^4.0.0",
     "vitest": "^4.0.18",
+    "web-ext": "^9.3.0",
     "webextension-polyfill": "^0.10.0"
   }
 }

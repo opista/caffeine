@@ -3,10 +3,12 @@ import { ExtensionMessage, LockStatus } from "../types";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";
+import { getOperatingSystem } from "./get-operating-system";
 
 export class BackgroundManager {
     private isInitialized = false;
     private isProcessing = false;
+    private lastActiveWebTabId: number | undefined;
 
     constructor(
         private sessionManager: SessionManager = new SessionManager(),
@@ -14,6 +16,7 @@ export class BackgroundManager {
         this.handleMessage = this.handleMessage.bind(this);
         this.handleTabRemoved = this.handleTabRemoved.bind(this);
         this.handleTabUpdated = this.handleTabUpdated.bind(this);
+        this.handleTabActivated = this.handleTabActivated.bind(this);
     }
 
     public init() {
@@ -23,29 +26,32 @@ export class BackgroundManager {
         browser.runtime.onMessage.addListener(this.handleMessage);
         browser.tabs.onRemoved.addListener(this.handleTabRemoved);
         browser.tabs.onUpdated.addListener(this.handleTabUpdated);
+        browser.tabs.onActivated.addListener(this.handleTabActivated);
     }
 
-    private async handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender): Promise<any> {
+    private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
         const senderTabId = sender.tab?.id;
-        const { status, type } = message;
+        const { status, type, error } = message;
 
         switch (type) {
             case "STATUS_UPDATE":
-                return this.handleStatusUpdate(status, senderTabId);
+                return this.handleStatusUpdate(status, senderTabId, error);
             case "GET_STATUS":
                 return this.handleGetStatus();
             case "TOGGLE_SESSION":
                 return this.handleToggleSession();
+            case "GET_PLATFORM_INFO":
+                return this.handleGetPlatformInfo();
         }
     }
 
-    private async handleStatusUpdate( status: LockStatus, tabId?: number,) {
+    private async handleStatusUpdate( status: LockStatus, tabId?: number, error?: string) {
         if (!tabId) return;
 
         if (status === "inactive") {
             await this.sessionManager.delete(tabId);
         } else {
-            await this.sessionManager.set(tabId, status);
+            await this.sessionManager.set(tabId, status, error);
         }
         updateBadge(tabId, status);
     }
@@ -54,17 +60,20 @@ export class BackgroundManager {
         const activeTabId = await this.getActiveTabId();
         if (!activeTabId) return { status: "inactive" };
 
-        const status = await this.sessionManager.get(activeTabId);
-        return { status };
+        const state = await this.sessionManager.get(activeTabId);
+        return state;
     }
 
     private async handleToggleSession() {
-if (this.isProcessing) return; 
-    this.isProcessing = true;
+        if (this.isProcessing) return; 
+        this.isProcessing = true;
         const activeTabId = await this.getActiveTabId();
-        if (!activeTabId) return;
+        if (!activeTabId) {
+            this.isProcessing = false;
+            return;
+        }
 
-        const currentStatus = await this.sessionManager.get(activeTabId);
+        const { status: currentStatus } = await this.sessionManager.get(activeTabId);
 
         if (currentStatus === "active") {
             try {
@@ -75,36 +84,63 @@ if (this.isProcessing) return;
             } finally {
                 this.isProcessing = false;
             }
+            return { status: "inactive" };
         } else {
+            const tab = await browser.tabs.get(activeTabId);
+            if (!tab.url?.startsWith('https://')) {
+                this.isProcessing = false;
+                const error = "Wake Lock requires a secure (HTTPS) page";
+                await this.sessionManager.set(activeTabId, "error", error);
+                updateBadge(activeTabId, "error");
+                return { status: "error", error };
+            }
+
             try {
                 await injectContentScript(activeTabId);
             } catch (e: any) {
-                console.error("Failed to inject script:", e);
-                await this.sessionManager.set(activeTabId, "error");
+                await this.sessionManager.set(activeTabId, "error", e.message);
                 updateBadge(activeTabId, "error");
                 return { status: "error", error: e.message };
             } finally {
                 this.isProcessing = false;
             }
+            return { status: "pending" };
         }
-        return { status: "pending" };
+    }
+    
+    private async handleGetPlatformInfo() {
+        const os = await getOperatingSystem();
+        return { os };
     }
 
     private async getActiveTabId(): Promise<number | undefined> {
-        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-        return tabs[0]?.id;
+        const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+        if (activeTab?.url?.startsWith('http')) return activeTab.id;
+        return this.lastActiveWebTabId;
     }
 
-    private async handleTabUpdated(tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType) {
-        if (changeInfo.status !== 'loading') return
+    private async handleTabActivated(activeInfo: browser.Tabs.OnActivatedActiveInfoType) {
+        const tab = await browser.tabs.get(activeInfo.tabId);
+        if (tab.url?.startsWith('http')) {
+            this.lastActiveWebTabId = tab.id;
+        }
+    }
+
+    private async handleTabUpdated(tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType, tab: browser.Tabs.Tab) {
+        if (changeInfo.status === 'complete' && tab.active && tab.url?.startsWith('http')) {
+            this.lastActiveWebTabId = tabId;
+        }
+
+        if (changeInfo.status !== 'loading') return;
 
         await this.sessionManager.delete(tabId);
         updateBadge(tabId, "inactive");
     }
 
-    
     private async handleTabRemoved(tabId: number) {
+        if (this.lastActiveWebTabId === tabId) {
+            this.lastActiveWebTabId = undefined;
+        }
         await this.sessionManager.delete(tabId);
     }
-
 }

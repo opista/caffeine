@@ -38,25 +38,25 @@ describe('SessionManager', () => {
     describe('set', () => {
         it('should store session status', async () => {
             await sessionManager.set(1, 'active');
-            expect(await sessionManager.get(1)).toBe('active');
-            expect(mockBrowser.storage.session.set).toHaveBeenCalledWith({ '1': 'active' });
+            expect(await sessionManager.get(1)).toEqual({ status: 'active' });
+            expect(mockBrowser.storage.session.set).toHaveBeenCalledWith({ '1': { status: 'active', error: undefined } });
         });
 
         it('should update existing session', async () => {
             await sessionManager.set(1, 'active');
             await sessionManager.set(1, 'inactive');
-            expect(await sessionManager.get(1)).toBe('inactive');
+            expect(await sessionManager.get(1)).toEqual({ status: 'inactive' });
         });
     });
 
     describe('get', () => {
         it('should return "inactive" for unknown session', async () => {
-            expect(await sessionManager.get(999)).toBe('inactive');
+            expect(await sessionManager.get(999)).toEqual({ status: 'inactive' });
         });
 
         it('should return stored status', async () => {
             await sessionManager.set(1, 'active');
-            expect(await sessionManager.get(1)).toBe('active');
+            expect(await sessionManager.get(1)).toEqual({ status: 'active' });
         });
     });
 
@@ -64,7 +64,7 @@ describe('SessionManager', () => {
         it('should delete session', async () => {
             await sessionManager.set(1, 'active');
             await sessionManager.delete(1);
-            expect(await sessionManager.get(1)).toBe('inactive');
+            expect(await sessionManager.get(1)).toEqual({ status: 'inactive' });
             expect(await sessionManager.has(1)).toBe(false);
             expect(mockBrowser.storage.session.remove).toHaveBeenCalledWith('1');
         });

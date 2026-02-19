@@ -23,6 +23,10 @@ export default defineConfig({
       manifest: generateManifest,
       additionalInputs: ["src/content/index.ts"],
       browser: process.env.TARGET || "chrome",
+      webExtConfig: {
+        startUrl: ["about:debugging"],
+        target: ["firefox-desktop", "firefox-android", "chromium"],
+      },
     }),
   ],
 });
