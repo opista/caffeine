@@ -71,7 +71,7 @@ describe('GlobalToggle', () => {
     expect(button).toBeTruthy();
 
     act(() => {
-      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      button?.click();
     });
 
     expect(toggleGlobalPermissionMock).toHaveBeenCalled();
