@@ -1,11 +1,11 @@
 import { useScopedPermissions } from "../../hooks/use-scoped-permissions";
-import { IconAlertCircle, IconArrowRight } from '@tabler/icons-react';
+import { IconAlertCircle, IconArrowRight } from "@tabler/icons-react";
 import { Card } from "./card";
 
 type PermissionWarningProps = {
   hasRule?: boolean;
   url: URL | null;
-}
+};
 
 export const PermissionWarning = ({ hasRule, url }: PermissionWarningProps) => {
   const { hasScopedPermission, requestScopedPermission } = useScopedPermissions(url);

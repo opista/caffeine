@@ -1,11 +1,10 @@
 import browser from "webextension-polyfill";
 
-
 export const getOperatingSystem = async () => {
   try {
     const platform = await browser.runtime.getPlatformInfo();
-    return platform.os
-    } catch (e) {
-      return null
-    }
-}
+    return platform.os;
+  } catch {
+    return null;
+  }
+};

@@ -16,10 +16,7 @@ export function Card<T extends ElementType = "div">({
   const Component = as || "div";
   return (
     <Component
-      className={cn(
-        "bg-white rounded-[24px] shadow-sm flex flex-col overflow-hidden",
-        className
-      )}
+      className={cn("bg-white rounded-[24px] shadow-sm flex flex-col overflow-hidden", className)}
       {...props}
     >
       {children}

@@ -1,0 +1,26 @@
+{
+  "categories": {
+    "correctness": "warn",
+    "suspicious": "warn",
+    "pedantic": "allow",
+    "style": "allow",
+    "perf": "allow",
+    "restriction": "allow",
+    "nursery": "allow"
+  },
+  "plugins": ["typescript", "import", "react", "vitest"],
+  "rules": {
+    "no-console": "allow",
+    "no-debugger": "warn",
+    "no-var": "warn",
+    "prefer-const": "warn",
+    "typescript/no-floating-promises": "warn",
+    "typescript/no-unsafe-argument": "warn",
+    "import/first": "warn",
+    "import/no-duplicates": "warn",
+    "react/jsx-no-target-blank": "warn",
+    "react/jsx-key": "warn",
+    "react/no-unknown-property": "warn",
+    "react/react-in-jsx-scope": "off"
+  }
+}

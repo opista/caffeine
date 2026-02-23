@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from "react";
 import browser from "webextension-polyfill";
-import { getRootDomain } from '../utils/get-root-domain';
+import { getRootDomain } from "../utils/get-root-domain";
 
 export const useActiveTab = () => {
   const [activeUrl, setActiveUrl] = useState<string | null | undefined>(undefined);
@@ -18,13 +18,19 @@ export const useActiveTab = () => {
     }
 
     // No active tab, or tab has no URL, or non-http protocol
-    if (activeUrl === null || !activeUrl.startsWith('http')) {
-      return { hostname: "Unsupported Page", url: null, isSupportedUrl: false, isHttps: false, rootDomain: "" };
+    if (activeUrl === null || !activeUrl.startsWith("http")) {
+      return {
+        hostname: "Unsupported Page",
+        url: null,
+        isSupportedUrl: false,
+        isHttps: false,
+        rootDomain: "",
+      };
     }
 
     try {
       const urlObj = new URL(activeUrl);
-      const isHttps = urlObj.protocol === 'https:';
+      const isHttps = urlObj.protocol === "https:";
       const isSupportedUrl = isHttps && !!urlObj.hostname;
       const rootDomain = getRootDomain(activeUrl);
 
@@ -33,10 +39,16 @@ export const useActiveTab = () => {
         url: isSupportedUrl ? urlObj : null,
         isSupportedUrl,
         isHttps,
-        rootDomain
+        rootDomain,
       };
     } catch {
-      return { hostname: "Unknown Page", url: null, isSupportedUrl: false, isHttps: false, rootDomain: "" };
+      return {
+        hostname: "Unknown Page",
+        url: null,
+        isSupportedUrl: false,
+        isHttps: false,
+        rootDomain: "",
+      };
     }
   }, [activeUrl]);
-}
+};

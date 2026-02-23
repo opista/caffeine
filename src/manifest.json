@@ -10,24 +10,15 @@
     "96": "icon/96.png",
     "128": "icon/128.png"
   },
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
-    "tabs"
-  ],
-  "optional_permissions": [
-    "*://*/*"
-  ],
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "optional_permissions": ["*://*/*"],
   "action": {
     "default_popup": "src/popup.html",
     "default_title": "Caffeine"
   },
   "background": {
     "{{chrome}}.service_worker": "src/background/index.ts",
-    "{{firefox}}.scripts": [
-      "src/background/index.ts"
-    ],
+    "{{firefox}}.scripts": ["src/background/index.ts"],
     "type": "module"
   },
   "{{firefox}}.browser_specific_settings": {

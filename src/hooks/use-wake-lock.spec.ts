@@ -5,21 +5,15 @@ import { renderHook } from '../test/utils';
 import { act } from 'react';
 import { sendExtensionMessage } from '../pages/utils/send-extension-message';
 
-// Mock sendExtensionMessage
-vi.mock('../pages/utils/send-extension-message', () => ({
-  sendExtensionMessage: vi.fn(),
-}));
+vi.mock('../pages/utils/send-extension-message');
 
 const mockSendExtensionMessage = vi.mocked(sendExtensionMessage);
 
-describe('useWakeLock', () => {
+describe("useWakeLock", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSendExtensionMessage.mockResolvedValue({});
     
-    // Mock window.close
-    vi.stubGlobal('close', vi.fn());
-    // Mock setTimeout
+    vi.stubGlobal("close", vi.fn());
     vi.useFakeTimers();
   });
 
@@ -33,34 +27,32 @@ describe('useWakeLock', () => {
     const { result } = renderHook(() => useWakeLock(false));
 
     await vi.waitFor(() => {
-      expect(result.current.status).toBe('active');
+      expect(result.current.status).toBe("active");
     });
     expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: 'GET_STATUS' });
   });
 
-  it('should update status when receiving STATUS_UPDATE message', async () => {
+  it("should update status when receiving STATUS_UPDATE message", async () => {
     let messageCallback: (msg: any) => void;
 
-    // Access the mocked addListener from global mock
     vi.mocked(browser.runtime.onMessage.addListener).mockImplementation((cb: any) => {
         messageCallback = cb;
     });
-    
+
     const { result } = renderHook(() => useWakeLock(false));
-    
-    // Simulate message
+
     act(() => {
-        if(messageCallback) {
-            messageCallback({ type: 'STATUS_UPDATE', status: 'pending' });
-        }
+      if (messageCallback) {
+        messageCallback({ type: "STATUS_UPDATE", status: "pending" });
+      }
     });
 
     await vi.waitFor(() => {
-        expect(result.current.status).toBe('pending');
+      expect(result.current.status).toBe("pending");
     });
   });
 
-  it('should clean up listener on unmount', () => {
+  it("should clean up listener on unmount", () => {
     const { unmount } = renderHook(() => useWakeLock(false));
     unmount();
     expect(vi.mocked(browser.runtime.onMessage.removeListener)).toHaveBeenCalled();
@@ -97,18 +89,17 @@ describe('useWakeLock', () => {
         // flush initial effect
       });
 
-      await act(async () => {
-          await result.current.toggleSession();
-      });
+    await act(async () => {
+      await result.current.toggleSession();
+    });
 
-      expect(result.current.status).toBe('pending');
-      
-      // Fast-forward time for setTimeout
-      act(() => {
-          vi.advanceTimersByTime(300);
-      });
-      
-      expect(window.close).toHaveBeenCalled();
+    expect(result.current.status).toBe("pending");
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });``
+
+    expect(window.close).toHaveBeenCalled();
   });
 
   it('should NOT close window on desktop when pending', async () => {
@@ -119,11 +110,11 @@ describe('useWakeLock', () => {
           await result.current.toggleSession();
       });
 
-      act(() => {
-          vi.advanceTimersByTime(300);
-      });
-      
-      expect(window.close).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(window.close).not.toHaveBeenCalled();
   });
 
   it('should handle error during toggle session', async () => {

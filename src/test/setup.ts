@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 global.IS_REACT_ACT_ENVIRONMENT = true;
 

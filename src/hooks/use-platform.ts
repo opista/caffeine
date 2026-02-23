@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import browser from "webextension-polyfill";
 
 export const usePlatform = () => {
@@ -10,5 +10,5 @@ export const usePlatform = () => {
     });
   }, []);
 
-  return { platform, isAndroid: platform === 'android' };
-}
+  return { platform, isAndroid: platform === "android" };
+};

@@ -12,7 +12,8 @@ export const GlobalToggle = () => {
       <div className="flex items-start gap-3 mb-4">
         <IconShieldCheck size={20} className="text-brand shrink-0" />
         <p className="text-[11px] text-slate-400 leading-normal font-medium">
-          Advanced permissions are required for the extension to function on every site automatically.
+          Advanced permissions are required for the extension to function on every site
+          automatically.
         </p>
       </div>
       <button
