@@ -16,9 +16,7 @@ describe("cn utility", () => {
   });
 
   it("should handle arrays of classes", () => {
-    expect(cn(["flex", "items-center"], ["justify-center"])).toBe(
-      "flex items-center justify-center",
-    );
+    expect(cn(["flex", "items-center"], ["justify-center"])).toBe("flex items-center justify-center");
   });
 
   it("should handle falsy values correctly", () => {

@@ -2,10 +2,7 @@ import { createRoot } from "react-dom/client";
 import { act, ReactNode } from "react";
 import { afterEach } from "vitest";
 
-export function renderHook<Result, Props>(
-  renderFn: (props: Props) => Result,
-  options?: { initialProps?: Props },
-) {
+export function renderHook<Result, Props>(renderFn: (props: Props) => Result, options?: { initialProps?: Props }) {
   const result = { current: null as Result };
   const container = document.createElement("div");
   const root = createRoot(container);
@@ -16,9 +13,7 @@ export function renderHook<Result, Props>(
   };
 
   const rerender = (props?: Props) =>
-    act(() =>
-      root.render(<TestComponent renderProps={props ?? (options?.initialProps as Props)} />),
-    );
+    act(() => root.render(<TestComponent renderProps={props ?? (options?.initialProps as Props)} />));
   const unmount = () => act(() => root.unmount());
 
   rerender();

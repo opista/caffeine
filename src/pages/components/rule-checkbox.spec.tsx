@@ -6,12 +6,7 @@ import { render } from "../../test/utils";
 describe("RuleCheckbox", () => {
   it("renders correctly with given props", () => {
     const { container } = render(
-      <RuleCheckbox
-        title="Keep awake for this URL"
-        description="example.com"
-        checked={false}
-        onClick={vi.fn()}
-      />,
+      <RuleCheckbox title="Keep awake for this URL" description="example.com" checked={false} onClick={vi.fn()} />,
     );
 
     expect(container.textContent).toContain("Keep awake for this URL");
@@ -23,12 +18,7 @@ describe("RuleCheckbox", () => {
   it("triggers onClick when clicked", () => {
     const onClickMock = vi.fn();
     const { container } = render(
-      <RuleCheckbox
-        title="Test Title"
-        description="Test Description"
-        checked={true}
-        onClick={onClickMock}
-      />,
+      <RuleCheckbox title="Test Title" description="Test Description" checked={true} onClick={onClickMock} />,
     );
 
     const label = container.querySelector("label");

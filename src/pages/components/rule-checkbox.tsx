@@ -9,13 +9,7 @@ export type RuleCheckboxProps = {
   className?: string;
 };
 
-export const RuleCheckbox = ({
-  title,
-  description,
-  checked,
-  onClick,
-  className,
-}: RuleCheckboxProps) => {
+export const RuleCheckbox = ({ title, description, checked, onClick, className }: RuleCheckboxProps) => {
   return (
     <label
       onClick={onClick}

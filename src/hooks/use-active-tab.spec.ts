@@ -11,9 +11,7 @@ describe("useActiveTab", () => {
   });
 
   it("should return hostname, URL object and isSupportedUrl=true for valid https url", async () => {
-    mockBrowser.tabs.query.mockResolvedValue([
-      { url: "https://www.example.com/path" },
-    ] as browser.Tabs.Tab[]);
+    mockBrowser.tabs.query.mockResolvedValue([{ url: "https://www.example.com/path" }] as browser.Tabs.Tab[]);
     const { result } = renderHook(() => useActiveTab());
 
     await vi.waitFor(() => {
@@ -25,9 +23,7 @@ describe("useActiveTab", () => {
   });
 
   it("should return hostname and url=null for http url", async () => {
-    mockBrowser.tabs.query.mockResolvedValue([
-      { url: "http://www.example.com/path" },
-    ] as browser.Tabs.Tab[]);
+    mockBrowser.tabs.query.mockResolvedValue([{ url: "http://www.example.com/path" }] as browser.Tabs.Tab[]);
     const { result } = renderHook(() => useActiveTab());
 
     await vi.waitFor(() => {
@@ -49,9 +45,7 @@ describe("useActiveTab", () => {
   });
 
   it("should return Unsupported Page for non-http url", async () => {
-    mockBrowser.tabs.query.mockResolvedValue([
-      { url: "chrome://extensions" },
-    ] as browser.Tabs.Tab[]);
+    mockBrowser.tabs.query.mockResolvedValue([{ url: "chrome://extensions" }] as browser.Tabs.Tab[]);
     const { result } = renderHook(() => useActiveTab());
 
     await vi.waitFor(() => {

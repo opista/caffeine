@@ -201,11 +201,7 @@ describe("BackgroundManager", () => {
         await triggerUpdate("complete");
 
         expect(mockInjectContentScript).not.toHaveBeenCalled();
-        expect(mockSessionManager.set).toHaveBeenCalledWith(
-          mockTabId,
-          "error",
-          "Permission revoked",
-        );
+        expect(mockSessionManager.set).toHaveBeenCalledWith(mockTabId, "error", "Permission revoked");
         expect(updateBadge).toHaveBeenCalledWith(mockTabId, "error");
       });
 

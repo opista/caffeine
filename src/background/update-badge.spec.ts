@@ -28,26 +28,23 @@ describe("updateBadge", () => {
     { status: "inactive", os: "mac", text: "", color: undefined },
     { status: "inactive", os: "android", text: "OFF", color: undefined },
     { status: "unknown", os: "mac", text: "", color: undefined },
-  ])(
-    "should update badge correctly for status: $status on $os",
-    async ({ status, os, text, color }) => {
-      const tabId = 123;
-      mockGetOperatingSystem.mockResolvedValue(os as browser.Runtime.PlatformOs);
-      await updateBadge(tabId, status as LockStatus);
+  ])("should update badge correctly for status: $status on $os", async ({ status, os, text, color }) => {
+    const tabId = 123;
+    mockGetOperatingSystem.mockResolvedValue(os as browser.Runtime.PlatformOs);
+    await updateBadge(tabId, status as LockStatus);
 
-      expect(mockBrowser.action.setBadgeText).toHaveBeenCalledWith({
-        text,
+    expect(mockBrowser.action.setBadgeText).toHaveBeenCalledWith({
+      text,
+      tabId,
+    });
+
+    if (color) {
+      expect(mockBrowser.action.setBadgeBackgroundColor).toHaveBeenCalledWith({
+        color,
         tabId,
       });
-
-      if (color) {
-        expect(mockBrowser.action.setBadgeBackgroundColor).toHaveBeenCalledWith({
-          color,
-          tabId,
-        });
-      } else {
-        expect(mockBrowser.action.setBadgeBackgroundColor).not.toHaveBeenCalled();
-      }
-    },
-  );
+    } else {
+      expect(mockBrowser.action.setBadgeBackgroundColor).not.toHaveBeenCalled();
+    }
+  });
 });

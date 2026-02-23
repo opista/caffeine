@@ -13,9 +13,7 @@ export default function Popup() {
           </div>
           <div>
             <h1 className="text-xl font-extrabold tracking-tight">Caffeine</h1>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
-              Keep your screen awake
-            </p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Keep your screen awake</p>
           </div>
         </div>
       </header>

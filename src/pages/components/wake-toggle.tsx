@@ -3,12 +3,7 @@ import { cn } from "../utils/cn";
 import { useWakeLock } from "../../hooks/use-wake-lock";
 import { useActiveTab } from "../../hooks/use-active-tab";
 import { usePlatform } from "../../hooks/use-platform";
-import {
-  IconAlertCircle,
-  IconArrowRight,
-  IconEyeClosed,
-  IconBoltFilled,
-} from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconBoltFilled } from "@tabler/icons-react";
 import { Card } from "./card";
 
 export const WakeToggle = () => {
@@ -25,16 +20,12 @@ export const WakeToggle = () => {
       <Card
         as="label"
         htmlFor="main-toggle"
-        className={cn(
-          "p-8 items-center gap-4 text-center border transition-all duration-300 relative select-none",
-          {
-            "shadow-brand/10 border-brand/20 cursor-pointer": isActive,
-            "shadow-slate-200/50 border-slate-100 cursor-pointer":
-              !isActive && !isPending && isSupportedUrl,
-            "shadow-amber-200/50 border-amber-200 cursor-not-allowed": isPending,
-            "opacity-60 cursor-not-allowed grayscale": !isSupportedUrl,
-          },
-        )}
+        className={cn("p-8 items-center gap-4 text-center border transition-all duration-300 relative select-none", {
+          "shadow-brand/10 border-brand/20 cursor-pointer": isActive,
+          "shadow-slate-200/50 border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
+          "shadow-amber-200/50 border-amber-200 cursor-not-allowed": isPending,
+          "opacity-60 cursor-not-allowed grayscale": !isSupportedUrl,
+        })}
       >
         <span className="sr-only">{isActive ? "Deactivate wake lock" : "Activate wake lock"}</span>
         <div className="relative w-28 h-14">
@@ -49,13 +40,10 @@ export const WakeToggle = () => {
             role="switch"
           />
           <div
-            className={cn(
-              "block w-full h-full rounded-full transition-colors duration-300 peer-checked:bg-brand",
-              {
-                "bg-slate-200": !isActive,
-                "bg-brand": isActive,
-              },
-            )}
+            className={cn("block w-full h-full rounded-full transition-colors duration-300 peer-checked:bg-brand", {
+              "bg-slate-200": !isActive,
+              "bg-brand": isActive,
+            })}
           ></div>
           <div className="absolute top-1 left-1 w-12 h-12 bg-white rounded-full shadow-lg transition-transform duration-300 pointer-events-none flex items-center justify-center peer-checked:translate-x-14">
             {isActive ? (
@@ -74,11 +62,7 @@ export const WakeToggle = () => {
         </div>
         <div className="space-y-1">
           <h2 className="text-lg font-bold transition-colors">
-            {isActive
-              ? "Wake Lock is Active"
-              : isPending
-                ? "Activating..."
-                : "Wake Lock is Inactive"}
+            {isActive ? "Wake Lock is Active" : isPending ? "Activating..." : "Wake Lock is Inactive"}
           </h2>
           <p className="text-sm text-slate-500 font-medium transition-colors">
             {isActive ? "Preventing sleep automatically" : "Tap to keep screen awake"}
@@ -92,9 +76,7 @@ export const WakeToggle = () => {
             <IconAlertCircle size={18} className="text-red-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-bold text-red-900 leading-none mb-1">
-              System prevented Wake Lock
-            </h3>
+            <h3 className="text-sm font-bold text-red-900 leading-none mb-1">System prevented Wake Lock</h3>
             <p className="text-[11px] text-red-700 leading-tight">
               {errorMsg || "Check your OS battery settings or power saving mode."}
             </p>
