@@ -19,4 +19,8 @@ describe('getRootDomain', () => {
     it('should return null for invalid domains', () => {
         expect(getRootDomain('https://localhost/')).toBe(null);
     });
+
+    it('should return null for invalid URL string', () => {
+        expect(getRootDomain('invalid-url')).toBe(null);
+    });
 });

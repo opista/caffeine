@@ -69,6 +69,12 @@ describe('RuleManager', () => {
             expect(storage['rule:example.com'].isDomainWide).toBe(true);
             expect(storage['rule:example.com'].pages).toContain('https://example.com/page');
         });
+
+        it('should do nothing for invalid URL', async () => {
+            await ruleManager.addPageRule('invalid-url');
+
+            expect(Object.keys(storage)).toHaveLength(0);
+        });
     });
 
     describe('addDomainRule', () => {
