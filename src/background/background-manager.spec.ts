@@ -90,17 +90,34 @@ describe('BackgroundManager', () => {
                     expect(mockInjectContentScript).toHaveBeenCalledWith(mockTabId);
                     expect(response).toEqual({ status: 'pending' });
                 });
+
+                it('should toggle the sender tab, not the active tab', async () => {
+                    const backgroundTabId = 456;
+                    const backgroundMessageSender = { tab: { id: backgroundTabId } } as browser.Runtime.MessageSender;
+
+                    mockSessionManager.get.mockResolvedValue({ status: 'inactive' });
+
+                    await sendMessage({ type: 'TOGGLE_SESSION' }, backgroundMessageSender);
+
+                    expect(mockInjectContentScript).toHaveBeenCalledWith(backgroundTabId);
+                    expect(mockInjectContentScript).not.toHaveBeenCalledWith(mockTabId);
+                });
              });
 
             // New tests for Rules
             describe('ADD_RULE', () => {
-                it('should add page rule', async () => {
-                    await sendMessage({ type: 'ADD_RULE', ruleType: 'page', url: 'https://example.com' });
+                it('should add page rule when called from extension', async () => {
+                    await sendMessage({ type: 'ADD_RULE', ruleType: 'page', url: 'https://example.com' }, { tab: undefined });
                     expect(mockRuleManager.addRule).toHaveBeenCalledWith('page', 'https://example.com');
                 });
 
-                it('should add domain rule', async () => {
-                    await sendMessage({ type: 'ADD_RULE', ruleType: 'domain', url: 'https://example.com' });
+                it('should NOT add rule when called from a tab', async () => {
+                    await sendMessage({ type: 'ADD_RULE', ruleType: 'page', url: 'https://example.com' }, mockMessageSender);
+                    expect(mockRuleManager.addRule).not.toHaveBeenCalled();
+                });
+
+                it('should add domain rule when called from extension', async () => {
+                    await sendMessage({ type: 'ADD_RULE', ruleType: 'domain', url: 'https://example.com' }, { tab: undefined });
                     expect(mockRuleManager.addRule).toHaveBeenCalledWith('domain', 'https://example.com');
                 });
             });
@@ -113,13 +130,35 @@ describe('BackgroundManager', () => {
             });
 
             describe('GET_RULE_FOR_TAB', () => {
-                it('should return rule state', async () => {
+                it('should return rule state for active tab when called from extension', async () => {
                     const ruleState = { hasPageRule: true, hasDomainRule: false, rootDomain: 'example.com' } as any;
                     mockRuleManager.getRuleState.mockResolvedValue(ruleState);
                     
-                    const response = await sendMessage({ type: 'GET_RULE_FOR_TAB' });
+                    const response = await sendMessage({ type: 'GET_RULE_FOR_TAB' }, { tab: undefined });
                     
                     expect(mockRuleManager.getRuleState).toHaveBeenCalledWith('https://example.com');
+                    expect(response).toEqual({ ruleState });
+                });
+
+                it('should return rule state for sender tab when called from tab', async () => {
+                    const backgroundTabId = 456;
+                    const backgroundTab = { id: backgroundTabId, url: 'https://background.com' } as browser.Tabs.Tab;
+                    const backgroundMessageSender = { tab: { id: backgroundTabId } } as browser.Runtime.MessageSender;
+
+                    mockBrowser.tabs.get.mockImplementation(async (id) => {
+                        if (id === backgroundTabId) return backgroundTab;
+                        return mockTab;
+                    });
+
+                    const ruleState = { hasPageRule: true, hasDomainRule: false, rootDomain: 'background.com' } as any;
+                    mockRuleManager.getRuleState.mockImplementation(async (url) => {
+                        if (url === 'https://background.com') return ruleState;
+                        return null;
+                    });
+
+                    const response = await sendMessage({ type: 'GET_RULE_FOR_TAB' }, backgroundMessageSender);
+
+                    expect(mockRuleManager.getRuleState).toHaveBeenCalledWith('https://background.com');
                     expect(response).toEqual({ ruleState });
                 });
  

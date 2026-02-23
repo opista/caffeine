@@ -40,19 +40,21 @@ export class BackgroundManager {
             case "STATUS_UPDATE":
                 return this.handleStatusUpdate(message.status, senderTabId, message.error);
             case "GET_STATUS":
-                return this.handleGetStatus();
+                return this.handleGetStatus(senderTabId);
             case "TOGGLE_SESSION":
-                return this.handleToggleSession();
+                return this.handleToggleSession(senderTabId);
             case "GET_PLATFORM_INFO":
                 return this.handleGetPlatformInfo();
             case "ADD_RULE":
+                if (senderTabId !== undefined) return;
                 return this.ruleManager.addRule(message.ruleType, message.url);
             case "REMOVE_RULE":
+                if (senderTabId !== undefined) return;
                 return this.ruleManager.removeRule(message.ruleType, message.url);
             case "GET_RULE_FOR_TAB":
-                return this.handleGetRuleForTab();
+                return this.handleGetRuleForTab(senderTabId);
             case "GET_PERMISSION_FOR_TAB":
-                return this.handleGetPermissionForTab();
+                return this.handleGetPermissionForTab(senderTabId);
         }
     }
 
@@ -67,51 +69,51 @@ export class BackgroundManager {
         updateBadge(tabId, status);
     }
 
-    private async handleGetStatus() {
-        const activeTabId = await this.getActiveTabId();
-        if (!activeTabId) return { status: "inactive" };
+    private async handleGetStatus(tabId?: number) {
+        const targetTabId = tabId ?? await this.getActiveTabId();
+        if (!targetTabId) return { status: "inactive" };
 
-        const state = await this.sessionManager.get(activeTabId);
+        const state = await this.sessionManager.get(targetTabId);
         return state;
     }
 
-    private async handleToggleSession() {
+    private async handleToggleSession(tabId?: number) {
         if (this.isProcessing) return;
         this.isProcessing = true;
-        const activeTabId = await this.getActiveTabId();
-        if (!activeTabId) {
+        const targetTabId = tabId ?? await this.getActiveTabId();
+        if (!targetTabId) {
             this.isProcessing = false;
             return;
         }
 
-        const { status: currentStatus } = await this.sessionManager.get(activeTabId);
+        const { status: currentStatus } = await this.sessionManager.get(targetTabId);
 
         if (currentStatus === "active") {
             try {
-                await browser.tabs.sendMessage(activeTabId, { type: "RELEASE_LOCK" });
+                await browser.tabs.sendMessage(targetTabId, { type: "RELEASE_LOCK" });
             } catch (e) {
-                await this.sessionManager.delete(activeTabId);
-                updateBadge(activeTabId, "inactive");
+                await this.sessionManager.delete(targetTabId);
+                updateBadge(targetTabId, "inactive");
             } finally {
                 this.isProcessing = false;
             }
             return { status: "inactive" };
         } else {
-            const tab = await browser.tabs.get(activeTabId);
+            const tab = await browser.tabs.get(targetTabId);
             if (!tab.url?.startsWith('https://')) {
                 this.isProcessing = false;
                 const error = "Wake Lock requires a secure (HTTPS) page";
-                await this.sessionManager.set(activeTabId, "error", error);
-                updateBadge(activeTabId, "error");
+                await this.sessionManager.set(targetTabId, "error", error);
+                updateBadge(targetTabId, "error");
                 return { status: "error", error };
             }
 
             try {
-                await injectContentScript(activeTabId);
+                await injectContentScript(targetTabId);
             } catch (e: unknown) {
                 const message = e instanceof Error ? e.message : "Unknown error";
-                await this.sessionManager.set(activeTabId, "error", message);
-                updateBadge(activeTabId, "error");
+                await this.sessionManager.set(targetTabId, "error", message);
+                updateBadge(targetTabId, "error");
                 return { status: "error", error: message };
             } finally {
                 this.isProcessing = false;
@@ -125,11 +127,11 @@ export class BackgroundManager {
         return { os };
     }
 
-    private async handleGetRuleForTab() {
-        const activeTabId = await this.getActiveTabId();
-        if (!activeTabId) return null;
+    private async handleGetRuleForTab(tabId?: number) {
+        const targetTabId = tabId ?? await this.getActiveTabId();
+        if (!targetTabId) return null;
  
-        const tab = await browser.tabs.get(activeTabId);
+        const tab = await browser.tabs.get(targetTabId);
         if (!tab.url || !tab.url.startsWith('http')) return null;
  
         const ruleState = await this.ruleManager.getRuleState(tab.url);
@@ -137,11 +139,11 @@ export class BackgroundManager {
         return { ruleState };
     }
 
-    private async handleGetPermissionForTab() {
-        const activeTabId = await this.getActiveTabId();
-        if (!activeTabId) return null;
+    private async handleGetPermissionForTab(tabId?: number) {
+        const targetTabId = tabId ?? await this.getActiveTabId();
+        if (!targetTabId) return null;
 
-        const tab = await browser.tabs.get(activeTabId);
+        const tab = await browser.tabs.get(targetTabId);
         if (!tab.url || !tab.url.startsWith('http')) return null;
 
         const rootDomain = getRootDomain(tab.url);
