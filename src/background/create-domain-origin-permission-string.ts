@@ -1,0 +1,1 @@
+export const createDomainOriginPermissionString = (rootDomain: string) => `*://*.${rootDomain}/*`;

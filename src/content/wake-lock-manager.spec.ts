@@ -117,6 +117,23 @@ describe('WakeLockManager', () => {
         expect(requestMock).toHaveBeenCalledTimes(2);
     });
 
+    it('should re-acquire wake lock on pageshow from bfcache', async () => {
+        await wakeLockManager.start();
+        await vi.waitUntil(() => requestMock.mock.calls.length > 0);
+
+        // Simulate the lock being released
+        const releaseCallback = addEventListenerMock.mock.calls[0][1];
+        releaseCallback();
+
+        // Trigger pageshow with persisted = true
+        const event = new Event('pageshow') as PageTransitionEvent;
+        Object.defineProperty(event, 'persisted', { value: true });
+        window.dispatchEvent(event);
+
+        await vi.waitUntil(() => requestMock.mock.calls.length > 1);
+        expect(requestMock).toHaveBeenCalledTimes(2);
+    });
+
     it('should handle wake lock not supported', async () => {
         Object.defineProperty(navigator, 'wakeLock', {
              configurable: true,

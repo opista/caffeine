@@ -10,27 +10,26 @@ describe('useActiveTab', () => {
         vi.clearAllMocks();
     });
 
-    it('should return hostname and isSupportedUrl=true for valid https url', async () => {
+    it('should return hostname, URL object and isSupportedUrl=true for valid https url', async () => {
         mockBrowser.tabs.query.mockResolvedValue([{ url: 'https://www.example.com/path' }] as browser.Tabs.Tab[]);
         const { result } = renderHook(() => useActiveTab());
 
         await vi.waitFor(() => {
-            expect(result.current).toEqual({
-                hostname: 'www.example.com',
-                isSupportedUrl: true
-            });
+            expect(result.current.hostname).toBe('www.example.com');
+            expect(result.current.isSupportedUrl).toBe(true);
+            expect(result.current.url).toBeInstanceOf(URL);
+            expect(result.current.url?.href).toBe('https://www.example.com/path');
         });
     });
 
-    it('should return hostname and isSupportedUrl=false for http url', async () => {
+    it('should return hostname and url=null for http url', async () => {
         mockBrowser.tabs.query.mockResolvedValue([{ url: 'http://www.example.com/path' }] as browser.Tabs.Tab[]);
         const { result } = renderHook(() => useActiveTab());
 
         await vi.waitFor(() => {
-            expect(result.current).toEqual({
-                hostname: 'www.example.com',
-                isSupportedUrl: false
-            });
+            expect(result.current.hostname).toBe('www.example.com');
+            expect(result.current.url).toBeNull();
+            expect(result.current.isSupportedUrl).toBe(false);
         });
     });
 
@@ -39,10 +38,9 @@ describe('useActiveTab', () => {
             const { result } = renderHook(() => useActiveTab());
 
             await vi.waitFor(() => {
-                expect(result.current).toEqual({
-                    hostname: 'Unknown Page',
-                    isSupportedUrl: false
-                });
+                expect(result.current.hostname).toBe('Unknown Page');
+                expect(result.current.url).toBeNull();
+                expect(result.current.isSupportedUrl).toBe(false);
             });
     });
 
@@ -51,10 +49,9 @@ describe('useActiveTab', () => {
         const { result } = renderHook(() => useActiveTab());
 
         await vi.waitFor(() => {
-            expect(result.current).toEqual({
-                hostname: 'Unsupported Page',
-                isSupportedUrl: false
-            });
+            expect(result.current.hostname).toBe('Unsupported Page');
+            expect(result.current.url).toBeNull();
+            expect(result.current.isSupportedUrl).toBe(false);
         });
     });
 
@@ -63,10 +60,9 @@ describe('useActiveTab', () => {
         const { result } = renderHook(() => useActiveTab());
 
         await vi.waitFor(() => {
-            expect(result.current).toEqual({
-                hostname: 'Unsupported Page',
-                isSupportedUrl: false
-            });
+            expect(result.current.hostname).toBe('Unsupported Page');
+            expect(result.current.url).toBeNull();
+            expect(result.current.isSupportedUrl).toBe(false);
         });
     });
 });

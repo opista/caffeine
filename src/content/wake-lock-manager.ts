@@ -13,6 +13,7 @@ export class WakeLockManager {
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
         this.handleLockRelease = this.handleLockRelease.bind(this);
         this.handleMessage = this.handleMessage.bind(this);
+        this.handlePageShow = this.handlePageShow.bind(this);
 
         if ('wakeLock' in navigator && navigator.wakeLock) {
             this.isSupported = true;
@@ -45,6 +46,7 @@ export class WakeLockManager {
         
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
         window.addEventListener('focus', this.handleVisibilityChange);
+        window.addEventListener('pageshow', this.handlePageShow);
         browser.runtime.onMessage.addListener(this.handleMessage);
     }
 
@@ -53,6 +55,7 @@ export class WakeLockManager {
         await this.releaseWakeLock();
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
         window.removeEventListener('focus', this.handleVisibilityChange);
+        window.removeEventListener('pageshow', this.handlePageShow);
         browser.runtime.onMessage.removeListener(this.handleMessage);
         this.sendMessage({ type: "STATUS_UPDATE", status: "inactive" });
     }
@@ -110,6 +113,12 @@ export class WakeLockManager {
     private handleVisibilityChange() {
         const documentIsVisible = document.visibilityState === 'visible';
         if (this.isEnabled && documentIsVisible && !this.wakeLock) {
+            this.requestWakeLock();
+        }
+    }
+
+    private handlePageShow(event: PageTransitionEvent) {
+        if (event.persisted && this.isEnabled && !this.wakeLock) {
             this.requestWakeLock();
         }
     }

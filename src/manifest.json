@@ -13,7 +13,11 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "tabs"
+  ],
+  "optional_permissions": [
+    "*://*/*"
   ],
   "action": {
     "default_popup": "src/popup.html",

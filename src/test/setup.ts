@@ -1,5 +1,9 @@
 import { vi } from 'vitest';
 
+// @ts-ignore
+global.IS_REACT_ACT_ENVIRONMENT = true;
+
+
 vi.mock('webextension-polyfill', () => ({
     default: {
         runtime: {
@@ -34,12 +38,22 @@ vi.mock('webextension-polyfill', () => ({
         scripting: {
             executeScript: vi.fn().mockResolvedValue([]),
         },
-        storage: {
+            storage: {
             session: {
                 get: vi.fn(),
                 set: vi.fn(),
                 remove: vi.fn(),
+            },
+            local: {
+                get: vi.fn(),
+                set: vi.fn(),
+                remove: vi.fn(),
             }
+        },
+        permissions: {
+            request: vi.fn().mockResolvedValue(true),
+            contains: vi.fn().mockResolvedValue(true),
+            remove: vi.fn().mockResolvedValue(true),
         },
     },
 }));

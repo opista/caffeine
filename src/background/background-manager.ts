@@ -1,9 +1,12 @@
 import browser from "webextension-polyfill";
-import { ExtensionMessage, LockStatus } from "../types";
+import { ExtensionMessage, LockStatus, RuleType } from "../types";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";
+import { RuleManager } from "./rules/rule-manager";
 import { getOperatingSystem } from "./get-operating-system";
+import { getRootDomain } from "../utils/get-root-domain";
+import { createDomainOriginPermissionString } from "./create-domain-origin-permission-string";
 
 export class BackgroundManager {
     private isInitialized = false;
@@ -12,6 +15,7 @@ export class BackgroundManager {
 
     constructor(
         private sessionManager: SessionManager = new SessionManager(),
+        private ruleManager: RuleManager = new RuleManager(),
     ) {
         this.handleMessage = this.handleMessage.bind(this);
         this.handleTabRemoved = this.handleTabRemoved.bind(this);
@@ -31,21 +35,28 @@ export class BackgroundManager {
 
     private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
         const senderTabId = sender.tab?.id;
-        const { status, type, error } = message;
 
-        switch (type) {
+        switch (message.type) {
             case "STATUS_UPDATE":
-                return this.handleStatusUpdate(status, senderTabId, error);
+                return this.handleStatusUpdate(message.status, senderTabId, message.error);
             case "GET_STATUS":
                 return this.handleGetStatus();
             case "TOGGLE_SESSION":
                 return this.handleToggleSession();
             case "GET_PLATFORM_INFO":
                 return this.handleGetPlatformInfo();
+            case "ADD_RULE":
+                return this.ruleManager.addRule(message.ruleType, message.url);
+            case "REMOVE_RULE":
+                return this.ruleManager.removeRule(message.ruleType, message.url);
+            case "GET_RULE_FOR_TAB":
+                return this.handleGetRuleForTab();
+            case "GET_PERMISSION_FOR_TAB":
+                return this.handleGetPermissionForTab();
         }
     }
 
-    private async handleStatusUpdate( status: LockStatus, tabId?: number, error?: string) {
+    private async handleStatusUpdate(status: LockStatus, tabId?: number, error?: string) {
         if (!tabId) return;
 
         if (status === "inactive") {
@@ -65,7 +76,7 @@ export class BackgroundManager {
     }
 
     private async handleToggleSession() {
-        if (this.isProcessing) return; 
+        if (this.isProcessing) return;
         this.isProcessing = true;
         const activeTabId = await this.getActiveTabId();
         if (!activeTabId) {
@@ -97,20 +108,46 @@ export class BackgroundManager {
 
             try {
                 await injectContentScript(activeTabId);
-            } catch (e: any) {
-                await this.sessionManager.set(activeTabId, "error", e.message);
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : "Unknown error";
+                await this.sessionManager.set(activeTabId, "error", message);
                 updateBadge(activeTabId, "error");
-                return { status: "error", error: e.message };
+                return { status: "error", error: message };
             } finally {
                 this.isProcessing = false;
             }
             return { status: "pending" };
         }
     }
-    
+
     private async handleGetPlatformInfo() {
         const os = await getOperatingSystem();
         return { os };
+    }
+
+    private async handleGetRuleForTab() {
+        const activeTabId = await this.getActiveTabId();
+        if (!activeTabId) return null;
+ 
+        const tab = await browser.tabs.get(activeTabId);
+        if (!tab.url || !tab.url.startsWith('http')) return null;
+ 
+        const ruleState = await this.ruleManager.getRuleState(tab.url);
+ 
+        return { ruleState };
+    }
+
+    private async handleGetPermissionForTab() {
+        const activeTabId = await this.getActiveTabId();
+        if (!activeTabId) return null;
+
+        const tab = await browser.tabs.get(activeTabId);
+        if (!tab.url || !tab.url.startsWith('http')) return null;
+
+        const rootDomain = getRootDomain(tab.url);
+        if (!rootDomain) return null;
+
+        return await browser.permissions.contains({ origins: [createDomainOriginPermissionString(rootDomain)] });
     }
 
     private async getActiveTabId(): Promise<number | undefined> {
@@ -127,14 +164,36 @@ export class BackgroundManager {
     }
 
     private async handleTabUpdated(tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType, tab: browser.Tabs.Tab) {
-        if (changeInfo.status === 'complete' && tab.active && tab.url?.startsWith('http')) {
-            this.lastActiveWebTabId = tabId;
+        if (changeInfo.status === 'loading') {
+            await this.sessionManager.delete(tabId);
+            updateBadge(tabId, "inactive");
+            return;
         }
 
-        if (changeInfo.status !== 'loading') return;
-
-        await this.sessionManager.delete(tabId);
-        updateBadge(tabId, "inactive");
+        if (changeInfo.status === 'complete' && tab.active && tab.url?.startsWith('https://')) {
+            this.lastActiveWebTabId = tabId;
+            
+            // Auto-activation logic
+            const ruleState = await this.ruleManager.getRuleState(tab.url);
+            if (ruleState) {
+                const hasPermission = await browser.permissions.contains({ origins: [createDomainOriginPermissionString(ruleState.rootDomain)] });
+                
+                if (hasPermission) {
+                    // Activate!
+                    try {
+                        await injectContentScript(tabId);
+                    } catch (e: unknown) {
+                         const message = e instanceof Error ? e.message : "Unknown error";
+                         await this.sessionManager.set(tabId, "error", message);
+                         updateBadge(tabId, "error");
+                    }
+                } else {
+                    // Permission revoked - show error
+                    await this.sessionManager.set(tabId, "error", "Permission revoked");
+                    updateBadge(tabId, "error");
+                }
+            }
+        }
     }
 
     private async handleTabRemoved(tabId: number) {

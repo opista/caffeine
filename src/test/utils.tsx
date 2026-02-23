@@ -9,23 +9,13 @@ export function renderHook<Result, Props>(
   const container = document.createElement('div');
   const root = createRoot(container);
 
-  function TestComponent({ renderProps }: { renderProps: Props }) {
+  const TestComponent = ({ renderProps }: { renderProps: Props }) => {
     result.current = render(renderProps);
     return null;
   }
 
-  function rerender(props?: Props) {
-    const renderProps = props ?? options?.initialProps;
-    act(() => {
-      root.render(<TestComponent renderProps={renderProps!} />);
-    });
-  }
-
-  function unmount() {
-    act(() => {
-      root.unmount();
-    });
-  }
+  const rerender = (props?: Props) => act(() => root.render(<TestComponent renderProps={props ?? options?.initialProps!} />));
+  const unmount = () => act(() => root.unmount());
 
   rerender();
 
