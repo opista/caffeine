@@ -131,9 +131,9 @@ describe('WakeToggle', () => {
     const { container } = render(<WakeToggle />);
 
     const input = container.querySelector('input');
-
+    expect(input).not.toBeNull();
     act(() => {
-      input?.click();
+      input!.click();
     });
 
     expect(mockToggleSession).toHaveBeenCalledTimes(1);
@@ -149,9 +149,9 @@ describe('WakeToggle', () => {
     const { container } = render(<WakeToggle />);
 
     const fixButton = container.querySelector('button');
-
+    expect(fixButton).not.toBeNull();
     act(() => {
-      fixButton?.click();
+      fixButton!.click();
     });
 
     expect(browser.tabs.create).toHaveBeenCalledWith({
