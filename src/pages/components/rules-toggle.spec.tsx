@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, Mock, beforeEach } from 'vitest';
-import { act } from 'react';
 import { RulesToggle } from './rules-toggle';
 import { useActiveTab } from '../../hooks/use-active-tab';
 import { useRules } from '../../hooks/use-rules';
 import { useScopedPermissions } from '../../hooks/use-scoped-permissions';
-import { render } from '../../test/utils';
+import { render, fireEvent } from '@testing-library/react';
 
 // Mocks
 vi.mock('../../hooks/use-active-tab');
@@ -23,7 +22,7 @@ vi.mock('./card', () => ({
 }));
 
 vi.mock('./rule-checkbox', () => ({
-  RuleCheckbox: ({ title, description, checked, onClick }: { title: string; description: string; checked: boolean; onClick: () => void; }) => (
+  RuleCheckbox: ({ title, description, checked, onClick }: any) => (
     <button
       data-testid={`checkbox-${title}`}
       data-description={description}
@@ -35,6 +34,10 @@ vi.mock('./rule-checkbox', () => ({
   ),
 }));
 
+const mockUseActiveTab = vi.mocked(useActiveTab);
+const mockUseRules = vi.mocked(useRules);
+const mockUseScopedPermissions = vi.mocked(useScopedPermissions);
+
 describe('RulesToggle', () => {
   const mockUrl = new URL('https://example.com/path');
   const mockTogglePageRule = vi.fn();
@@ -44,19 +47,19 @@ describe('RulesToggle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (useActiveTab as Mock).mockReturnValue({
+    mockUseActiveTab.mockReturnValue({
       url: mockUrl,
       isSupportedUrl: true,
       rootDomain: 'example.com',
-    });
+    } as any);
 
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
       ruleState: null,
       togglePageRule: mockTogglePageRule,
       toggleDomainRule: mockToggleDomainRule,
     });
 
-    (useScopedPermissions as Mock).mockReturnValue({
+    mockUseScopedPermissions.mockReturnValue({
       hasScopedPermission: true,
       requestScopedPermission: mockRequestScopedPermission,
     });
@@ -69,11 +72,11 @@ describe('RulesToggle', () => {
   });
 
   it('should return null if isSupportedUrl is false', () => {
-    (useActiveTab as Mock).mockReturnValue({
+    mockUseActiveTab.mockReturnValue({
       isSupportedUrl: false,
       url: null,
       rootDomain: '',
-    });
+    } as any);
 
     const { container } = render(<RulesToggle />);
     expect(container.innerHTML).toBe('');
@@ -93,7 +96,7 @@ describe('RulesToggle', () => {
   });
 
   it('should reflect rule state in checkboxes', () => {
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
       ruleState: { hasPageRule: true, hasDomainRule: false, rootDomain: 'example.com' },
       togglePageRule: mockTogglePageRule,
       toggleDomainRule: mockToggleDomainRule,
@@ -112,9 +115,9 @@ describe('RulesToggle', () => {
     const { container } = render(<RulesToggle />);
     const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
 
-    act(() => {
-      pageCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    if (pageCheckbox) {
+        fireEvent.click(pageCheckbox);
+    }
 
     expect(mockTogglePageRule).toHaveBeenCalledWith(mockUrl.href);
   });
@@ -123,20 +126,20 @@ describe('RulesToggle', () => {
     const { container } = render(<RulesToggle />);
     const domainCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this website"]');
 
-    act(() => {
-        domainCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    if (domainCheckbox) {
+        fireEvent.click(domainCheckbox);
+    }
 
     expect(mockToggleDomainRule).toHaveBeenCalledWith(mockUrl.href);
   });
 
   it('should request permission when enabling page rule if permission is missing', () => {
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
       ruleState: null,
       togglePageRule: mockTogglePageRule,
       toggleDomainRule: mockToggleDomainRule,
     });
-    (useScopedPermissions as Mock).mockReturnValue({
+    mockUseScopedPermissions.mockReturnValue({
       hasScopedPermission: false, // Permission missing
       requestScopedPermission: mockRequestScopedPermission,
     });
@@ -144,21 +147,21 @@ describe('RulesToggle', () => {
     const { container } = render(<RulesToggle />);
     const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
 
-    act(() => {
-      pageCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    if (pageCheckbox) {
+        fireEvent.click(pageCheckbox);
+    }
 
     expect(mockTogglePageRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).toHaveBeenCalledWith(mockUrl.href);
   });
 
   it('should NOT request permission when enabling page rule if permission is present', () => {
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
       ruleState: null,
       togglePageRule: mockTogglePageRule,
       toggleDomainRule: mockToggleDomainRule,
     });
-    (useScopedPermissions as Mock).mockReturnValue({
+    mockUseScopedPermissions.mockReturnValue({
         hasScopedPermission: true, // Permission present
         requestScopedPermission: mockRequestScopedPermission,
     });
@@ -166,21 +169,21 @@ describe('RulesToggle', () => {
     const { container } = render(<RulesToggle />);
     const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
 
-    act(() => {
-      pageCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    if (pageCheckbox) {
+        fireEvent.click(pageCheckbox);
+    }
 
     expect(mockTogglePageRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).not.toHaveBeenCalled();
   });
 
   it('should NOT request permission when disabling page rule (even if permission missing)', () => {
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
       ruleState: { hasPageRule: true, hasDomainRule: false, rootDomain: 'example.com' }, // Rule is ON
       togglePageRule: mockTogglePageRule,
       toggleDomainRule: mockToggleDomainRule,
     });
-    (useScopedPermissions as Mock).mockReturnValue({
+    mockUseScopedPermissions.mockReturnValue({
         hasScopedPermission: false, // Permission missing (unlikely state if rule is ON, but possible if permissions revoked externally)
         requestScopedPermission: mockRequestScopedPermission,
     });
@@ -188,9 +191,9 @@ describe('RulesToggle', () => {
     const { container } = render(<RulesToggle />);
     const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
 
-    act(() => {
-      pageCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    if (pageCheckbox) {
+        fireEvent.click(pageCheckbox);
+    }
 
     // Clicking when ON toggles it OFF. We should verify requestScopedPermission is NOT called.
     expect(mockTogglePageRule).toHaveBeenCalled();
@@ -198,12 +201,12 @@ describe('RulesToggle', () => {
   });
 
   it('should request permission when enabling domain rule if permission is missing', () => {
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
       ruleState: null,
       togglePageRule: mockTogglePageRule,
       toggleDomainRule: mockToggleDomainRule,
     });
-    (useScopedPermissions as Mock).mockReturnValue({
+    mockUseScopedPermissions.mockReturnValue({
       hasScopedPermission: false,
       requestScopedPermission: mockRequestScopedPermission,
     });
@@ -211,9 +214,9 @@ describe('RulesToggle', () => {
     const { container } = render(<RulesToggle />);
     const domainCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this website"]');
 
-    act(() => {
-        domainCheckbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    if (domainCheckbox) {
+        fireEvent.click(domainCheckbox);
+    }
 
     expect(mockToggleDomainRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).toHaveBeenCalledWith(mockUrl.href);
@@ -221,7 +224,7 @@ describe('RulesToggle', () => {
 
   it('should pass correct hasRule prop to PermissionWarning', () => {
     // Case 1: hasRule is false (no rules active)
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
         ruleState: null,
         togglePageRule: mockTogglePageRule,
         toggleDomainRule: mockToggleDomainRule,
@@ -234,7 +237,7 @@ describe('RulesToggle', () => {
     unmount();
 
     // Case 2: hasRule is true (page rule active)
-    (useRules as Mock).mockReturnValue({
+    mockUseRules.mockReturnValue({
         ruleState: { hasPageRule: true, hasDomainRule: false, rootDomain: 'example.com' },
         togglePageRule: mockTogglePageRule,
         toggleDomainRule: mockToggleDomainRule,
