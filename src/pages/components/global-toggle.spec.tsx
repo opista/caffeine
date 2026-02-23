@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, Mock } from 'vitest';
+import { describe, it, expect, vi, Mock, afterEach } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
 import { GlobalToggle } from './global-toggle';
@@ -6,38 +6,44 @@ import { useGlobalPermissions } from '../../hooks/use-global-permissions';
 
 vi.mock('../../hooks/use-global-permissions');
 
+let container: HTMLDivElement | null = null;
+let root: any = null;
+
 function renderComponent() {
-  const container = document.createElement('div');
+  container = document.createElement('div');
   document.body.appendChild(container);
-  const root = createRoot(container);
+  root = createRoot(container);
 
   act(() => {
     root.render(<GlobalToggle />);
   });
 
-  return {
-    container,
-    unmount: () => {
-      act(() => {
-        root.unmount();
-      });
-      container.remove();
-    }
-  };
+  return { container };
 }
 
 describe('GlobalToggle', () => {
+  afterEach(() => {
+    if (root) {
+      act(() => {
+        root.unmount();
+      });
+      root = null;
+    }
+    if (container) {
+      container.remove();
+      container = null;
+    }
+  });
+
   it('should not render anything when global permission is granted', () => {
     (useGlobalPermissions as Mock).mockReturnValue({
       hasGlobalPermission: true,
       toggleGlobalPermission: vi.fn(),
     });
 
-    const { container, unmount } = renderComponent();
+    const { container } = renderComponent();
 
     expect(container.textContent).toBe('');
-
-    unmount();
   });
 
   it('should render the permission card when global permission is missing', () => {
@@ -46,12 +52,10 @@ describe('GlobalToggle', () => {
       toggleGlobalPermission: vi.fn(),
     });
 
-    const { container, unmount } = renderComponent();
+    const { container } = renderComponent();
 
     expect(container.textContent).toContain('Advanced permissions are required');
     expect(container.textContent).toContain('Enable Access to All Websites');
-
-    unmount();
   });
 
   it('should call toggleGlobalPermission when the button is clicked', () => {
@@ -61,7 +65,7 @@ describe('GlobalToggle', () => {
       toggleGlobalPermission: toggleGlobalPermissionMock,
     });
 
-    const { container, unmount } = renderComponent();
+    const { container } = renderComponent();
 
     const button = container.querySelector('button');
     expect(button).toBeTruthy();
@@ -71,7 +75,5 @@ describe('GlobalToggle', () => {
     });
 
     expect(toggleGlobalPermissionMock).toHaveBeenCalled();
-
-    unmount();
   });
 });
