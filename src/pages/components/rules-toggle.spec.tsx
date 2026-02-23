@@ -23,7 +23,7 @@ vi.mock('./card', () => ({
 }));
 
 vi.mock('./rule-checkbox', () => ({
-  RuleCheckbox: ({ title, description, checked, onClick }: any) => (
+  RuleCheckbox: ({ title, description, checked, onClick }: { title: string; description: string; checked: boolean; onClick: () => void; }) => (
     <button
       data-testid={`checkbox-${title}`}
       data-description={description}
