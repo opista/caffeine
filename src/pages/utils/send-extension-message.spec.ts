@@ -4,12 +4,13 @@ import browser from 'webextension-polyfill';
 import { ExtensionMessage } from '../../types';
 
 describe('sendExtensionMessage', () => {
+    const message: ExtensionMessage = { type: 'GET_STATUS' };
+
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     it('should send a message using browser.runtime.sendMessage and return the response', async () => {
-        const message: ExtensionMessage = { type: 'GET_STATUS' };
         const mockResponse = { status: 'active' };
 
         // Mock the implementation of sendMessage
@@ -22,7 +23,6 @@ describe('sendExtensionMessage', () => {
     });
 
     it('should handle errors when browser.runtime.sendMessage fails', async () => {
-        const message: ExtensionMessage = { type: 'GET_STATUS' };
         const mockError = new Error('Extension context invalidated');
 
         vi.mocked(browser.runtime.sendMessage).mockRejectedValue(mockError);
