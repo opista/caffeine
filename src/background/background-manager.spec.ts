@@ -90,6 +90,25 @@ describe('BackgroundManager', () => {
                     expect(mockInjectContentScript).toHaveBeenCalledWith(mockTabId);
                     expect(response).toEqual({ status: 'pending' });
                 });
+
+                it('should deactivate session if currently active and handle error', async () => {
+                    mockSessionManager.get.mockResolvedValue({ status: 'active' });
+                    mockBrowser.tabs.sendMessage.mockRejectedValue(new Error('Connection failed'));
+
+                    const response = await sendMessage({ type: 'TOGGLE_SESSION' });
+
+                    expect(mockBrowser.tabs.sendMessage).toHaveBeenCalledWith(mockTabId, { type: 'RELEASE_LOCK' });
+                    expect(mockSessionManager.delete).toHaveBeenCalledWith(mockTabId);
+                    expect(updateBadge).toHaveBeenCalledWith(mockTabId, 'inactive');
+                    expect(response).toEqual({ status: 'inactive' });
+
+                    // Verify isProcessing is reset by attempting to toggle again
+                    mockSessionManager.get.mockResolvedValue({ status: 'inactive' });
+                    const response2 = await sendMessage({ type: 'TOGGLE_SESSION' });
+
+                    expect(mockInjectContentScript).toHaveBeenCalledWith(mockTabId);
+                    expect(response2).toEqual({ status: 'pending' });
+                });
              });
 
             // New tests for Rules

@@ -89,7 +89,7 @@ export class BackgroundManager {
         if (currentStatus === "active") {
             try {
                 await browser.tabs.sendMessage(activeTabId, { type: "RELEASE_LOCK" });
-            } catch (e) {
+            } catch {
                 await this.sessionManager.delete(activeTabId);
                 updateBadge(activeTabId, "inactive");
             } finally {
