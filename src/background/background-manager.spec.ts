@@ -101,6 +101,13 @@ describe('BackgroundManager', () => {
                     expect(mockSessionManager.delete).toHaveBeenCalledWith(mockTabId);
                     expect(updateBadge).toHaveBeenCalledWith(mockTabId, 'inactive');
                     expect(response).toEqual({ status: 'inactive' });
+
+                    // Verify isProcessing is reset by attempting to toggle again
+                    mockSessionManager.get.mockResolvedValue({ status: 'inactive' });
+                    const response2 = await sendMessage({ type: 'TOGGLE_SESSION' });
+
+                    expect(mockInjectContentScript).toHaveBeenCalledWith(mockTabId);
+                    expect(response2).toEqual({ status: 'pending' });
                 });
              });
 
