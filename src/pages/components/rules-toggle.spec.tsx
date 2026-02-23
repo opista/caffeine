@@ -3,7 +3,7 @@ import { RulesToggle } from './rules-toggle';
 import { useActiveTab } from '../../hooks/use-active-tab';
 import { useRules } from '../../hooks/use-rules';
 import { useScopedPermissions } from '../../hooks/use-scoped-permissions';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 
 // Mocks
 vi.mock('../../hooks/use-active-tab');
@@ -22,7 +22,7 @@ vi.mock('./card', () => ({
 }));
 
 vi.mock('./rule-checkbox', () => ({
-  RuleCheckbox: ({ title, description, checked, onClick }: { title: string; description: string; checked: boolean; onClick: () => void; }) => (
+  RuleCheckbox: ({ title, description, checked, onClick }: any) => (
     <button
       data-testid={`checkbox-${title}`}
       data-description={description}
@@ -51,7 +51,9 @@ describe('RulesToggle', () => {
       url: mockUrl,
       isSupportedUrl: true,
       rootDomain: 'example.com',
-    } as any);
+      hostname: 'example.com',
+      isHttps: true,
+    });
 
     mockUseRules.mockReturnValue({
       ruleState: null,
@@ -76,23 +78,25 @@ describe('RulesToggle', () => {
       isSupportedUrl: false,
       url: null,
       rootDomain: '',
-    } as any);
+      hostname: '',
+      isHttps: false,
+    });
 
     const { container } = render(<RulesToggle />);
     expect(container.innerHTML).toBe('');
   });
 
   it('should render checkboxes with correct descriptions', () => {
-    const { container } = render(<RulesToggle />);
+    render(<RulesToggle />);
 
-    const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
-    const domainCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this website"]');
+    const pageCheckbox = screen.getByTestId('checkbox-Keep awake for this URL');
+    const domainCheckbox = screen.getByTestId('checkbox-Keep awake for this website');
 
     expect(pageCheckbox).toBeTruthy();
-    expect(pageCheckbox?.getAttribute('data-description')).toBe('example.com/path');
+    expect(pageCheckbox.getAttribute('data-description')).toBe('example.com/path');
 
     expect(domainCheckbox).toBeTruthy();
-    expect(domainCheckbox?.getAttribute('data-description')).toBe('example.com');
+    expect(domainCheckbox.getAttribute('data-description')).toBe('example.com');
   });
 
   it('should reflect rule state in checkboxes', () => {
@@ -102,33 +106,29 @@ describe('RulesToggle', () => {
       toggleDomainRule: mockToggleDomainRule,
     });
 
-    const { container } = render(<RulesToggle />);
+    render(<RulesToggle />);
 
-    const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
-    const domainCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this website"]');
+    const pageCheckbox = screen.getByTestId('checkbox-Keep awake for this URL');
+    const domainCheckbox = screen.getByTestId('checkbox-Keep awake for this website');
 
-    expect(pageCheckbox?.getAttribute('data-checked')).toBe('true');
-    expect(domainCheckbox?.getAttribute('data-checked')).toBe('false');
+    expect(pageCheckbox.getAttribute('data-checked')).toBe('true');
+    expect(domainCheckbox.getAttribute('data-checked')).toBe('false');
   });
 
   it('should call togglePageRule when page rule checkbox is clicked', () => {
-    const { container } = render(<RulesToggle />);
-    const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
+    render(<RulesToggle />);
+    const pageCheckbox = screen.getByTestId('checkbox-Keep awake for this URL');
 
-    if (pageCheckbox) {
-        fireEvent.click(pageCheckbox);
-    }
+    fireEvent.click(pageCheckbox);
 
     expect(mockTogglePageRule).toHaveBeenCalledWith(mockUrl.href);
   });
 
   it('should call toggleDomainRule when domain rule checkbox is clicked', () => {
-    const { container } = render(<RulesToggle />);
-    const domainCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this website"]');
+    render(<RulesToggle />);
+    const domainCheckbox = screen.getByTestId('checkbox-Keep awake for this website');
 
-    if (domainCheckbox) {
-        fireEvent.click(domainCheckbox);
-    }
+    fireEvent.click(domainCheckbox);
 
     expect(mockToggleDomainRule).toHaveBeenCalledWith(mockUrl.href);
   });
@@ -144,12 +144,10 @@ describe('RulesToggle', () => {
       requestScopedPermission: mockRequestScopedPermission,
     });
 
-    const { container } = render(<RulesToggle />);
-    const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
+    render(<RulesToggle />);
+    const pageCheckbox = screen.getByTestId('checkbox-Keep awake for this URL');
 
-    if (pageCheckbox) {
-        fireEvent.click(pageCheckbox);
-    }
+    fireEvent.click(pageCheckbox);
 
     expect(mockTogglePageRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).toHaveBeenCalledWith(mockUrl.href);
@@ -166,12 +164,10 @@ describe('RulesToggle', () => {
         requestScopedPermission: mockRequestScopedPermission,
     });
 
-    const { container } = render(<RulesToggle />);
-    const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
+    render(<RulesToggle />);
+    const pageCheckbox = screen.getByTestId('checkbox-Keep awake for this URL');
 
-    if (pageCheckbox) {
-        fireEvent.click(pageCheckbox);
-    }
+    fireEvent.click(pageCheckbox);
 
     expect(mockTogglePageRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).not.toHaveBeenCalled();
@@ -188,12 +184,10 @@ describe('RulesToggle', () => {
         requestScopedPermission: mockRequestScopedPermission,
     });
 
-    const { container } = render(<RulesToggle />);
-    const pageCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this URL"]');
+    render(<RulesToggle />);
+    const pageCheckbox = screen.getByTestId('checkbox-Keep awake for this URL');
 
-    if (pageCheckbox) {
-        fireEvent.click(pageCheckbox);
-    }
+    fireEvent.click(pageCheckbox);
 
     // Clicking when ON toggles it OFF. We should verify requestScopedPermission is NOT called.
     expect(mockTogglePageRule).toHaveBeenCalled();
@@ -211,12 +205,10 @@ describe('RulesToggle', () => {
       requestScopedPermission: mockRequestScopedPermission,
     });
 
-    const { container } = render(<RulesToggle />);
-    const domainCheckbox = container.querySelector('[data-testid="checkbox-Keep awake for this website"]');
+    render(<RulesToggle />);
+    const domainCheckbox = screen.getByTestId('checkbox-Keep awake for this website');
 
-    if (domainCheckbox) {
-        fireEvent.click(domainCheckbox);
-    }
+    fireEvent.click(domainCheckbox);
 
     expect(mockToggleDomainRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).toHaveBeenCalledWith(mockUrl.href);
@@ -230,9 +222,9 @@ describe('RulesToggle', () => {
         toggleDomainRule: mockToggleDomainRule,
     });
 
-    const { container, unmount } = render(<RulesToggle />);
-    let warning = container.querySelector('[data-testid="permission-warning"]');
-    expect(warning?.getAttribute('data-has-rule')).toBe('false');
+    const { unmount } = render(<RulesToggle />);
+    let warning = screen.getByTestId("permission-warning");
+    expect(warning.getAttribute('data-has-rule')).toBe('false');
 
     unmount();
 
@@ -243,8 +235,8 @@ describe('RulesToggle', () => {
         toggleDomainRule: mockToggleDomainRule,
     });
 
-    const { container: container2 } = render(<RulesToggle />);
-    warning = container2.querySelector('[data-testid="permission-warning"]');
-    expect(warning?.getAttribute('data-has-rule')).toBe('true');
+    render(<RulesToggle />);
+    warning = screen.getByTestId("permission-warning");
+    expect(warning.getAttribute('data-has-rule')).toBe('true');
   });
 });
