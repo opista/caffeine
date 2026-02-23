@@ -1,5 +1,9 @@
 declare global {
-  var IS_REACT_ACT_ENVIRONMENT: boolean;
+  namespace NodeJS {
+    interface Global {
+      IS_REACT_ACT_ENVIRONMENT: boolean;
+    }
+  }
 }
 
 export {};
