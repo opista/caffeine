@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 import { useWakeLock } from "../../hooks/use-wake-lock";
 import { useActiveTab } from "../../hooks/use-active-tab";
 import { usePlatform } from "../../hooks/use-platform";
-import { IconCoffee, IconAlertCircle, IconArrowRight, IconBolt, IconEyeClosed, IconBoltFilled } from '@tabler/icons-react';
+import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconBoltFilled } from '@tabler/icons-react';
 import { Card } from './card';
 
 export const WakeToggle = () => {
