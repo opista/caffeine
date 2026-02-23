@@ -1,47 +1,19 @@
-import { describe, it, expect, vi, Mock, afterEach } from 'vitest';
-import { createRoot } from 'react-dom/client';
+import { describe, it, expect, vi, Mock } from 'vitest';
 import { act } from 'react';
 import { GlobalToggle } from './global-toggle';
 import { useGlobalPermissions } from '../../hooks/use-global-permissions';
+import { render } from '../../test/utils';
 
 vi.mock('../../hooks/use-global-permissions');
 
-let container: HTMLDivElement | null = null;
-let root: any = null;
-
-function renderComponent() {
-  container = document.createElement('div');
-  document.body.appendChild(container);
-  root = createRoot(container);
-
-  act(() => {
-    root.render(<GlobalToggle />);
-  });
-
-  return { container };
-}
-
 describe('GlobalToggle', () => {
-  afterEach(() => {
-    if (root) {
-      act(() => {
-        root.unmount();
-      });
-      root = null;
-    }
-    if (container) {
-      container.remove();
-      container = null;
-    }
-  });
-
   it('should not render anything when global permission is granted', () => {
     (useGlobalPermissions as Mock).mockReturnValue({
       hasGlobalPermission: true,
       toggleGlobalPermission: vi.fn(),
     });
 
-    const { container } = renderComponent();
+    const { container } = render(<GlobalToggle />);
 
     expect(container.textContent).toBe('');
   });
@@ -52,7 +24,7 @@ describe('GlobalToggle', () => {
       toggleGlobalPermission: vi.fn(),
     });
 
-    const { container } = renderComponent();
+    const { container } = render(<GlobalToggle />);
 
     expect(container.textContent).toContain('Advanced permissions are required');
     expect(container.textContent).toContain('Enable Access to All Websites');
@@ -65,13 +37,13 @@ describe('GlobalToggle', () => {
       toggleGlobalPermission: toggleGlobalPermissionMock,
     });
 
-    const { container } = renderComponent();
+    const { container } = render(<GlobalToggle />);
 
     const button = container.querySelector('button');
     expect(button).toBeTruthy();
 
     act(() => {
-      button?.click();
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
     expect(toggleGlobalPermissionMock).toHaveBeenCalled();
