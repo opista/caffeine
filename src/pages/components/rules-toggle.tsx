@@ -38,7 +38,7 @@ export const RulesToggle = () => {
         />
 
         <RuleCheckbox
-          title="Keep awake for website"
+          title="Keep awake for this website"
           description={rootDomain || "This domain"}
           checked={ruleState?.hasDomainRule ?? false}
           onClick={() => {
