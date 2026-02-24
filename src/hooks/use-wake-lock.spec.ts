@@ -6,24 +6,6 @@ import { renderHook } from "../test/utils";
 import { act } from "react";
 import { MessageType } from "../types";
 
-// Mock browser
-const mockAddListener = vi.fn();
-const mockRemoveListener = vi.fn();
-const mockSendMessage = vi.fn();
-
-vi.mock("webextension-polyfill", () => ({
-  default: {
-    runtime: {
-      sendMessage: (...args: any[]) => mockSendMessage(...args),
-      onMessage: {
-        addListener: (cb: any) => mockAddListener(cb),
-        removeListener: (cb: any) => mockRemoveListener(cb),
-      },
-      getPlatformInfo: vi.fn(),
-    },
-  },
-}));
-
 vi.mock("../pages/utils/send-extension-message");
 
 const mockBrowser = vi.mocked(browser, true);
