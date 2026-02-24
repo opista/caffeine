@@ -1,6 +1,6 @@
-import { useActiveTab } from "../../hooks/use-active-tab";
-import { useRules } from "../../hooks/use-rules";
-import { useScopedPermissions } from "../../hooks/use-scoped-permissions";
+import { useActiveTab } from "../hooks/use-active-tab";
+import { useRules } from "../hooks/use-rules";
+import { useScopedPermissions } from "../hooks/use-scoped-permissions";
 import { PermissionWarning } from "./permission-warning";
 import { Card } from "./card";
 import { RuleCheckbox } from "./rule-checkbox";

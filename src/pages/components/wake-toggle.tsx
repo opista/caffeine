@@ -1,8 +1,8 @@
 import browser from "webextension-polyfill";
 import { cn } from "../utils/cn";
-import { useWakeLock } from "../../hooks/use-wake-lock";
-import { useActiveTab } from "../../hooks/use-active-tab";
-import { usePlatform } from "../../hooks/use-platform";
+import { useWakeLock } from "../hooks/use-wake-lock";
+import { useActiveTab } from "../hooks/use-active-tab";
+import { usePlatform } from "../hooks/use-platform";
 import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconEyeFilled } from "@tabler/icons-react";
 import { Card } from "./card";
 

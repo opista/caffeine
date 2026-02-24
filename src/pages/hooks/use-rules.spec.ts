@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useRules } from "./use-rules";
 import browser from "webextension-polyfill";
-import { MessageType } from "../types";
+import { MessageType } from "../../types";
 
 const mockBrowser = vi.mocked(browser, true);
 

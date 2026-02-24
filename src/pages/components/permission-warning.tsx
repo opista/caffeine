@@ -1,4 +1,4 @@
-import { useScopedPermissions } from "../../hooks/use-scoped-permissions";
+import { useScopedPermissions } from "../hooks/use-scoped-permissions";
 import { IconAlertCircle, IconArrowRight } from "@tabler/icons-react";
 import { Card } from "./card";
 

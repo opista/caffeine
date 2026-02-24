@@ -3,7 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { act } from "react";
 import { useScopedPermissions } from "./use-scoped-permissions";
 import browser from "webextension-polyfill";
-import { MessageType } from "../types";
+import { MessageType } from "../../types";
 
 const mockBrowser = vi.mocked(browser, true);
 

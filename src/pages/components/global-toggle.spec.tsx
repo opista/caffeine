@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, Mock } from "vitest";
 import { GlobalToggle } from "./global-toggle";
-import { useGlobalPermissions } from "../../hooks/use-global-permissions";
+import { useGlobalPermissions } from "../hooks/use-global-permissions";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 vi.mock("../../hooks/use-global-permissions");

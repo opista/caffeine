@@ -1,5 +1,5 @@
 import { IconLockAccess, IconShieldCheck } from "@tabler/icons-react";
-import { useGlobalPermissions } from "../../hooks/use-global-permissions";
+import { useGlobalPermissions } from "../hooks/use-global-permissions";
 import { Card } from "./card";
 
 export const GlobalToggle = () => {

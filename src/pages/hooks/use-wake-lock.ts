@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import browser from "webextension-polyfill";
-import { ExtensionMessage, LockStatus, MessageType } from "../types";
-import { sendExtensionMessage } from "../pages/utils/send-extension-message";
+import { ExtensionMessage, LockStatus, MessageType } from "../../types";
+import { sendExtensionMessage } from "../utils/send-extension-message";
 
 export const useWakeLock = (isAndroid: boolean) => {
   const [status, setStatus] = useState<LockStatus>("inactive");

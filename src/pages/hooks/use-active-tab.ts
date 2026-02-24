@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import browser from "webextension-polyfill";
-import { getRootDomain } from "../utils/get-root-domain";
+import { getRootDomain } from "../../utils/get-root-domain";
 
 export const useActiveTab = () => {
   const [activeUrl, setActiveUrl] = useState<string | null | undefined>(undefined);

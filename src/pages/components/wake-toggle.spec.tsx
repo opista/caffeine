@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
 import browser from "webextension-polyfill";
 import { WakeToggle } from "./wake-toggle";
-import { useActiveTab } from "../../hooks/use-active-tab";
-import { usePlatform } from "../../hooks/use-platform";
-import { useWakeLock } from "../../hooks/use-wake-lock";
+import { useActiveTab } from "../hooks/use-active-tab";
+import { usePlatform } from "../hooks/use-platform";
+import { useWakeLock } from "../hooks/use-wake-lock";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 // Mock hooks

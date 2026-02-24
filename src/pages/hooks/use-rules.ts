@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { RuleState, MessageType } from "../types";
-import { sendExtensionMessage } from "../pages/utils/send-extension-message";
+import { RuleState, MessageType } from "../../types";
+import { sendExtensionMessage } from "../utils/send-extension-message";
 
 export const useRules = (url: URL | null) => {
   const [ruleState, setRuleState] = useState<RuleState | null>(null);
