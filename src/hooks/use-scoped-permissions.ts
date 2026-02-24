@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import browser from "webextension-polyfill";
-import { getRootDomain } from '../utils/get-root-domain';
-import { sendExtensionMessage } from '../pages/utils/send-extension-message';
-import { createDomainOriginPermissionString } from '../background/create-domain-origin-permission-string';
+import { getRootDomain } from "../utils/get-root-domain";
+import { sendExtensionMessage } from "../pages/utils/send-extension-message";
+import { createDomainOriginPermissionString } from "../background/create-domain-origin-permission-string";
 
 const fetchScopedPermissions = async (url: URL | null) => {
-    if (!url) return false;
-    return sendExtensionMessage({ type: "GET_PERMISSION_FOR_TAB" }).catch(() => null).then((hasPermission) => hasPermission ?? false);
-}
+  if (!url) return false;
+  return sendExtensionMessage({ type: "GET_PERMISSION_FOR_TAB" })
+    .catch(() => null)
+    .then((hasPermission) => hasPermission ?? false);
+};
 
 const requestScopedPermission = async (targetUrl: string) => {
   const rootDomain = getRootDomain(targetUrl);

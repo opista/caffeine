@@ -1,14 +1,14 @@
-import { useActiveTab } from '../../hooks/use-active-tab';
-import { useRules } from '../../hooks/use-rules';
-import { useScopedPermissions } from '../../hooks/use-scoped-permissions';
-import { PermissionWarning } from './permission-warning';
-import { Card } from './card';
-import { RuleCheckbox } from './rule-checkbox';
+import { useActiveTab } from "../../hooks/use-active-tab";
+import { useRules } from "../../hooks/use-rules";
+import { useScopedPermissions } from "../../hooks/use-scoped-permissions";
+import { PermissionWarning } from "./permission-warning";
+import { Card } from "./card";
+import { RuleCheckbox } from "./rule-checkbox";
 
 const formatPageUrl = (url: URL | null) => {
-  if (!url) return
-  return url.hostname + url.pathname
-}
+  if (!url) return;
+  return url.hostname + url.pathname;
+};
 
 export const RulesToggle = () => {
   const { url, isSupportedUrl, rootDomain } = useActiveTab();
@@ -51,6 +51,6 @@ export const RulesToggle = () => {
           }}
         />
       </Card>
-    </div >
+    </div>
   );
 };

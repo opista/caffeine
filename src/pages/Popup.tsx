@@ -1,7 +1,7 @@
 import { RulesToggle } from "./components/rules-toggle";
 import { WakeToggle } from "./components/wake-toggle";
-import { IconCoffee } from '@tabler/icons-react';
-import { GlobalToggle } from './components/global-toggle';
+import { IconCoffee } from "@tabler/icons-react";
+import { GlobalToggle } from "./components/global-toggle";
 
 export default function Popup() {
   return (
@@ -29,4 +29,3 @@ export default function Popup() {
     </div>
   );
 }
-

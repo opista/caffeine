@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import browser from "webextension-polyfill";
 
 const GLOBAL_ORIGIN = "*://*/*";
 
-const fetchGlobalPermissions = async () =>  browser.permissions.contains({ origins: [GLOBAL_ORIGIN] }).catch(() => false);
+const fetchGlobalPermissions = async () =>
+  browser.permissions.contains({ origins: [GLOBAL_ORIGIN] }).catch(() => false);
 
 const requestPermission = (origin: string) => {
   browser.permissions.request({ origins: [origin] });
   window.close();
-}
+};
 
 const removePermission = (origin: string) => browser.permissions.remove({ origins: [origin] });
 

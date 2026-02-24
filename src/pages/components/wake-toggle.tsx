@@ -3,8 +3,8 @@ import { cn } from "../utils/cn";
 import { useWakeLock } from "../../hooks/use-wake-lock";
 import { useActiveTab } from "../../hooks/use-active-tab";
 import { usePlatform } from "../../hooks/use-platform";
-import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconBoltFilled } from '@tabler/icons-react';
-import { Card } from './card';
+import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconBoltFilled } from "@tabler/icons-react";
+import { Card } from "./card";
 
 export const WakeToggle = () => {
   const { isSupportedUrl } = useActiveTab();
@@ -20,19 +20,14 @@ export const WakeToggle = () => {
       <Card
         as="label"
         htmlFor="main-toggle"
-        className={cn(
-          "p-8 items-center gap-4 text-center border transition-all duration-300 relative select-none",
-          {
-            "shadow-brand/10 border-brand/20 cursor-pointer": isActive,
-            "shadow-slate-200/50 border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
-            "shadow-amber-200/50 border-amber-200 cursor-not-allowed": isPending,
-            "opacity-60 cursor-not-allowed grayscale": !isSupportedUrl,
-          }
-        )}
+        className={cn("p-8 items-center gap-4 text-center border transition-all duration-300 relative select-none", {
+          "shadow-brand/10 border-brand/20 cursor-pointer": isActive,
+          "shadow-slate-200/50 border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
+          "shadow-amber-200/50 border-amber-200 cursor-not-allowed": isPending,
+          "opacity-60 cursor-not-allowed grayscale": !isSupportedUrl,
+        })}
       >
-        <span className="sr-only">
-          {isActive ? "Deactivate wake lock" : "Activate wake lock"}
-        </span>
+        <span className="sr-only">{isActive ? "Deactivate wake lock" : "Activate wake lock"}</span>
         <div className="relative w-28 h-14">
           <input
             checked={isActive}
@@ -45,19 +40,23 @@ export const WakeToggle = () => {
             role="switch"
           />
           <div
-            className={cn(
-              "block w-full h-full rounded-full transition-colors duration-300 peer-checked:bg-brand",
-              {
-                "bg-slate-200": !isActive,
-                "bg-brand": isActive,
-              }
-            )}
+            className={cn("block w-full h-full rounded-full transition-colors duration-300 peer-checked:bg-brand", {
+              "bg-slate-200": !isActive,
+              "bg-brand": isActive,
+            })}
           ></div>
           <div className="absolute top-1 left-1 w-12 h-12 bg-white rounded-full shadow-lg transition-transform duration-300 pointer-events-none flex items-center justify-center peer-checked:translate-x-14">
             {isActive ? (
               <IconBoltFilled size={24} stroke={2.5} className="text-brand" />
             ) : (
-              <IconEyeClosed size={24} stroke={2.5} className={cn("transition-colors duration-300", { "text-slate-400": !isPending, "text-amber-500 animate-pulse": isPending })} />
+              <IconEyeClosed
+                size={24}
+                stroke={2.5}
+                className={cn("transition-colors duration-300", {
+                  "text-slate-400": !isPending,
+                  "text-amber-500 animate-pulse": isPending,
+                })}
+              />
             )}
           </div>
         </div>
@@ -82,7 +81,11 @@ export const WakeToggle = () => {
               {errorMsg || "Check your OS battery settings or power saving mode."}
             </p>
             <button
-              onClick={() => browser.tabs.create({ url: "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API" })}
+              onClick={() =>
+                browser.tabs.create({
+                  url: "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API",
+                })
+              }
               className="mt-2 text-xs font-bold text-red-600 flex items-center gap-1 hover:underline"
             >
               Fix Issue <IconArrowRight size={14} />

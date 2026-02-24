@@ -1,7 +1,7 @@
 {
   "name": "caffeine",
-  "private": true,
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,12 @@
     "dev:firefox:android": "web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir dist --adb-device 192.168.1.39:41095",
     "build": "tsc && vite build",
     "build:firefox": "cross-env TARGET=firefox vite build",
-    "test": "vitest"
+    "test": "vitest",
+    "fmt": "oxfmt --write",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint -c oxlint.json",
+    "lint:fix": "oxlint --fix -c oxlint.json",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.37.1",
@@ -29,7 +34,11 @@
     "@types/webextension-polyfill": "^0.10.0",
     "@vitejs/plugin-react": "^4.2.1",
     "cross-env": "^10.1.0",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "lint-staged": "^16.2.7",
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.6.3",
     "vite": "^5.0.0",
@@ -37,5 +46,11 @@
     "vitest": "^4.0.18",
     "web-ext": "^9.3.0",
     "webextension-polyfill": "^0.10.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "oxfmt --write",
+      "oxlint --fix -c oxlint.json"
+    ]
   }
 }

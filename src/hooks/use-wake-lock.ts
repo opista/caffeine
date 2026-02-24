@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import browser from "webextension-polyfill";
-import { LockStatus } from '../types';
-import { sendExtensionMessage } from '../pages/utils/send-extension-message';
+import { LockStatus } from "../types";
+import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 
 export const useWakeLock = (isAndroid: boolean) => {
   const [status, setStatus] = useState<LockStatus>("inactive");
@@ -27,23 +27,23 @@ export const useWakeLock = (isAndroid: boolean) => {
   }, []);
 
   const toggleSession = useCallback(async () => {
-      const response = await sendExtensionMessage({ type: "TOGGLE_SESSION" });
+    const response = await sendExtensionMessage({ type: "TOGGLE_SESSION" });
 
-      if (response) {
-        if (response.status === "error") {
-          setStatus("error");
-          setErrorMsg(response.error ?? null);
-        } else if (response.status === "pending") {
-          setStatus((prev) => (prev === "active" || prev === "error" ? prev : "pending"));
-          if (isAndroid) {
-            setTimeout(() => window.close(), 300);
-          }
-        } else if (response.status === "inactive") {
-          setStatus("inactive");
-          setErrorMsg(null);
+    if (response) {
+      if (response.status === "error") {
+        setStatus("error");
+        setErrorMsg(response.error ?? null);
+      } else if (response.status === "pending") {
+        setStatus((prev) => (prev === "active" || prev === "error" ? prev : "pending"));
+        if (isAndroid) {
+          setTimeout(() => window.close(), 300);
         }
+      } else if (response.status === "inactive") {
+        setStatus("inactive");
+        setErrorMsg(null);
       }
+    }
   }, [isAndroid]);
 
   return { status, errorMsg, toggleSession };
-}
+};

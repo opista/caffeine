@@ -1,11 +1,11 @@
 import { useScopedPermissions } from "../../hooks/use-scoped-permissions";
-import { IconAlertCircle, IconArrowRight } from '@tabler/icons-react';
+import { IconAlertCircle, IconArrowRight } from "@tabler/icons-react";
 import { Card } from "./card";
 
 type PermissionWarningProps = {
   hasRule?: boolean;
   url: URL | null;
-}
+};
 
 export const PermissionWarning = ({ hasRule, url }: PermissionWarningProps) => {
   const { hasScopedPermission, requestScopedPermission } = useScopedPermissions(url);
@@ -19,9 +19,7 @@ export const PermissionWarning = ({ hasRule, url }: PermissionWarningProps) => {
       </div>
       <div className="flex-1">
         <h3 className="text-sm font-bold text-red-900 leading-none mb-1">Permission required</h3>
-        <p className="text-[11px] text-red-700 leading-tight">
-          Please enable site access to allow this rule to work.
-        </p>
+        <p className="text-[11px] text-red-700 leading-tight">Please enable site access to allow this rule to work.</p>
         <button
           onClick={() => url && requestScopedPermission(url.href)}
           className="mt-2 text-xs font-bold text-red-600 flex items-center gap-1 hover:underline cursor-pointer"

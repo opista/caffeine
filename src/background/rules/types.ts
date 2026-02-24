@@ -1,5 +1,5 @@
 export interface DomainRuleset {
-    createdAt: number;
-    isDomainWide: boolean;
-    pages: string[];
+  createdAt: number;
+  isDomainWide: boolean;
+  pages: string[];
 }
