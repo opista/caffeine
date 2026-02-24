@@ -7,15 +7,11 @@ import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { MessageType } from '../types';
 
-vi.mock("./inject-content-script", () => ({
-  injectContentScript: vi.fn(),
-}));
-vi.mock("./update-badge", () => ({
-  updateBadge: vi.fn(),
-}));
-vi.mock("./session-manager");
-vi.mock("./rules/rule-manager");
 vi.mock("./get-operating-system");
+vi.mock('./session-manager');
+vi.mock('./rules/rule-manager');
+vi.mock('./update-badge');
+vi.mock('./inject-content-script');
 
 const mockBrowser = vi.mocked(browser, true);
 const mockInjectContentScript = vi.mocked(injectContentScript);

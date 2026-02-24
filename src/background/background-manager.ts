@@ -40,22 +40,22 @@ export class BackgroundManager {
     private initializeMessageHandlers() {
         this.messageHandlers = {
             [MessageType.STATUS_UPDATE]: (message, senderTabId) => {
-                if (message.type === MessageType.STATUS_UPDATE) {
-                    return this.handleStatusUpdate(message.status, senderTabId, message.error);
-                }
+                // Since this handler is called based on the message type, we can cast it safely
+                // or rely on the caller to dispatch correctly.
+                // However, TS might need convincing if we want to access properties specific to STATUS_UPDATE.
+                const msg = message as Extract<ExtensionMessage, { type: MessageType.STATUS_UPDATE }>;
+                return this.handleStatusUpdate(msg.status, senderTabId, msg.error);
             },
             [MessageType.GET_STATUS]: () => this.handleGetStatus(),
             [MessageType.TOGGLE_SESSION]: () => this.handleToggleSession(),
             [MessageType.GET_PLATFORM_INFO]: () => this.handleGetPlatformInfo(),
             [MessageType.ADD_RULE]: (message) => {
-                if (message.type === MessageType.ADD_RULE) {
-                    return this.ruleManager.addRule(message.ruleType, message.url);
-                }
+                const msg = message as Extract<ExtensionMessage, { type: MessageType.ADD_RULE }>;
+                return this.ruleManager.addRule(msg.ruleType, msg.url);
             },
             [MessageType.REMOVE_RULE]: (message) => {
-                if (message.type === MessageType.REMOVE_RULE) {
-                    return this.ruleManager.removeRule(message.ruleType, message.url);
-                }
+                const msg = message as Extract<ExtensionMessage, { type: MessageType.REMOVE_RULE }>;
+                return this.ruleManager.removeRule(msg.ruleType, msg.url);
             },
             [MessageType.GET_RULE_FOR_TAB]: () => this.handleGetRuleForTab(),
             [MessageType.GET_PERMISSION_FOR_TAB]: () => this.handleGetPermissionForTab(),
