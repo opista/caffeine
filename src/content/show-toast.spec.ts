@@ -19,17 +19,17 @@ describe("showToast", () => {
     expect(host?.style.position).toBe("fixed");
     expect(host?.shadowRoot).toBeTruthy();
 
-    const toast = host?.shadowRoot?.querySelector("div");
-    expect(toast?.textContent).toBe("Success Message");
-    expect(toast?.style.background).toBe("rgb(46, 204, 113)"); // #2ecc71
+    const toast = host?.shadowRoot?.querySelector(".toast");
+    expect(toast?.querySelector("span")?.textContent).toBe("Success Message");
+    expect(toast?.querySelector(".icon")).toBeTruthy();
   });
 
-  it("should show error toast with red background", () => {
+  it("should show error toast with icon", () => {
     showToast("Error Message", "error");
 
     const host = document.getElementById("caffeine-toast-root");
-    const toast = host?.shadowRoot?.querySelector("div");
-    expect(toast?.style.background).toBe("rgb(231, 76, 60)"); // #e74c3c
+    const toast = host?.shadowRoot?.querySelector(".toast");
+    expect(toast?.querySelector(".icon")).toBeTruthy();
   });
 
   it("should remove existing toast before showing a new one", () => {
@@ -41,7 +41,7 @@ describe("showToast", () => {
 
     expect(document.body.children.length).toBe(1);
     expect(firstHost).not.toBe(secondHost);
-    expect(secondHost?.shadowRoot?.querySelector("div")?.textContent).toBe("Second Toast");
+    expect(secondHost?.shadowRoot?.querySelector("span")?.textContent).toBe("Second Toast");
   });
 
   it("should animate in using requestAnimationFrame", () => {
@@ -51,10 +51,10 @@ describe("showToast", () => {
     expect(rafSpy).toHaveBeenCalled();
 
     const host = document.getElementById("caffeine-toast-root");
-    const toast = host?.shadowRoot?.querySelector("div");
+    const toast = host?.shadowRoot?.querySelector(".toast") as HTMLElement;
 
-    // Initial state before RAF
-    expect(toast?.style.opacity).toBe("0");
+    // Initial state before RAF (inline style should be empty, but we set it in CSS)
+    expect(toast?.style.opacity).toBe("");
 
     // Execute RAF callback
     const callback = rafSpy.mock.calls[0][0] as FrameRequestCallback;
@@ -73,11 +73,11 @@ describe("showToast", () => {
     // Advance timers by 3 seconds
     vi.advanceTimersByTime(3000);
 
-    const toast = host?.shadowRoot?.querySelector("div");
+    const toast = host?.shadowRoot?.querySelector(".toast") as HTMLElement;
     expect(toast?.style.opacity).toBe("0");
 
-    // Advance timers by another 300ms for the removal
-    vi.advanceTimersByTime(300);
+    // Advance timers by another 400ms for the removal
+    vi.advanceTimersByTime(400);
 
     expect(document.getElementById("caffeine-toast-root")).toBeNull();
   });

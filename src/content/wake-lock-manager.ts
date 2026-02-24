@@ -78,7 +78,7 @@ export class WakeLockManager {
       this.wakeLock = await navigator.wakeLock.request("screen");
       this.wakeLock?.addEventListener("release", this.handleLockRelease);
       this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "active" });
-      if (this.isAndroid && this.isManual) showToast("☕ Caffeine active", "success");
+      if (this.isAndroid && this.isManual) showToast("Caffeine active", "success");
       this.isManual = false; // Reset after first use
     } catch (err: unknown) {
       // On Android, the popup steals focus from the page, causing
@@ -102,7 +102,7 @@ export class WakeLockManager {
             : errorMsg === ErrorCode.NOT_SUPPORTED
               ? "Device does not support wake lock"
               : "Unknown error";
-        showToast("⚠️ " + toastMsg, "error");
+        showToast(toastMsg, "error");
       }
     }
   }
