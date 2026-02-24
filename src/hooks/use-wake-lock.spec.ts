@@ -82,11 +82,16 @@ describe('useWakeLock', () => {
   });
 
   it('should handle toggle session', async () => {
-    mockSendExtensionMessage.mockResolvedValue({ status: 'active' }); // Initial check
+    mockSendExtensionMessage
+      .mockResolvedValueOnce({ status: 'active' }) // For initial GET_STATUS
+      .mockResolvedValueOnce({ status: 'inactive' }); // For TOGGLE_SESSION
+
     const { result } = renderHook(() => useWakeLock(false));
     
-    // Reset mock to return new status on toggle
-    mockSendExtensionMessage.mockResolvedValue({ status: 'inactive' });
+    // Wait for initial status to be set
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe('active');
+    });
 
     await act(async () => {
       await result.current.toggleSession();
@@ -137,11 +142,16 @@ describe('useWakeLock', () => {
   });
 
   it('should handle error during toggle session', async () => {
-    mockSendExtensionMessage.mockResolvedValue({ status: 'active' }); // Initial check
+    mockSendExtensionMessage
+      .mockResolvedValueOnce({ status: 'active' }) // For initial GET_STATUS
+      .mockResolvedValueOnce({ status: 'error', error: 'Test error message' }); // For TOGGLE_SESSION
+
     const { result } = renderHook(() => useWakeLock(false));
 
-    // Reset mock to return error on toggle
-    mockSendExtensionMessage.mockResolvedValue({ status: 'error', error: 'Test error message' });
+    // Wait for initial status to be set
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe('active');
+    });
 
     await act(async () => {
       await result.current.toggleSession();
