@@ -62,10 +62,14 @@ export class BackgroundManager {
 
     private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
         const senderTabId = sender.tab?.id;
-        const handler = this.messageHandlers[message.type] as MessageHandler<ExtensionMessage> | undefined;
+        const handler = this.messageHandlers[message.type];
 
         if (handler) {
-            return handler(message, senderTabId);
+            // We know that if message.type matches the handler key, the message payload matches the handler argument.
+            // However, TS cannot correlate dynamic property access with union narrowing.
+            // Using 'any' here is a localized compromise to avoid a misleading "MessageHandler<ExtensionMessage>" cast
+            // which implies the handler accepts ANY message (it does not).
+            return (handler as any)(message, senderTabId);
         }
     }
 
