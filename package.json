@@ -1,14 +1,18 @@
 {
   "name": "caffeine",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:chrome": "vite",
     "dev:firefox": "cross-env TARGET=firefox vite",
     "dev:firefox:android": "cross-env TARGET=firefox vite build && web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir dist --adb-device 192.168.1.39:36473",
-    "build": "tsc && vite build",
-    "build:firefox": "cross-env TARGET=firefox vite build",
+    "build:chrome": "tsc && vite build && pnpm bundle:chrome",
+    "build:firefox": "cross-env TARGET=firefox vite build && pnpm bundle:firefox",
+    "bundle:chrome": "node scripts/bundle.js",
+    "bundle:firefox": "cross-env TARGET=firefox node scripts/bundle.js",
+    "release:chrome": "pnpm build:chrome && pnpm bundle:chrome",
+    "release:firefox": "pnpm build:firefox && pnpm bundle:firefox",
     "test": "vitest",
     "fmt": "oxfmt --write",
     "fmt:check": "oxfmt --check",
@@ -45,7 +49,8 @@
     "vite-plugin-web-extension": "^4.0.0",
     "vitest": "^4.0.18",
     "web-ext": "^9.3.0",
-    "webextension-polyfill": "^0.10.0"
+    "webextension-polyfill": "^0.10.0",
+    "zip-a-folder": "^4.0.4"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,scss,md}": [
