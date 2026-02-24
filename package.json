@@ -7,8 +7,7 @@
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox --mv3",
-    "dev:firefox:android": "pnpm build:firefox && web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir .output/firefox-mv3 --adb-device adb-2A191FDH300FJB-RxZ3wJ._adb-tls-connect._tcp device",
-    "debug": "web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir .output/firefox-mv3 --adb-device adb-2A191FDH300FJB-RxZ3wJ._adb-tls-connect._tcp",
+    "dev:firefox:android": "pnpm build:firefox && web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir .output/firefox-mv3 --adb-device adb-2A191FDH300FJB-RxZ3wJ._adb-tls-connect._tcp",
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox --mv3",
     "zip": "wxt zip",
