@@ -258,7 +258,7 @@ describe("WakeLockManager", () => {
 
     await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
-    expect(showToast).toHaveBeenCalledWith("☕ Caffeine active", "success");
+    expect(showToast).toHaveBeenCalledWith("Caffeine active", "success");
   });
 
   it("should NOT show toast on Android if isManual is false", async () => {

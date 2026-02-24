@@ -26,9 +26,8 @@ export const WakeError = ({ errorMsg }: WakeErrorProps) => {
   if (!errorMsg || errorMsg === ErrorCode.PERMISSION_REQUIRED) return null;
 
   const errorDetails = errorMap[errorMsg] || {
-    title: "Wake Lock failed to activate",
+    title: "Caffeine failed to activate",
     description: errorMsg || "An unknown error occurred.",
-    showFixButton: false,
   };
 
   return <ErrorAlert title={errorDetails.title} description={errorDetails.description} />;

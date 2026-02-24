@@ -4,10 +4,9 @@ import { updateBadge } from "./update-badge";
 import { LockStatus } from "../types";
 import { getOperatingSystem } from "./get-operating-system";
 
-const mockBrowser = vi.mocked(browser, true);
-
 vi.mock("./get-operating-system");
 
+const mockBrowser = vi.mocked(browser, true);
 const mockGetOperatingSystem = vi.mocked(getOperatingSystem);
 
 describe("updateBadge", () => {
@@ -40,13 +39,6 @@ describe("updateBadge", () => {
       tabId,
     });
 
-    if (color) {
-      expect(mockBrowser.action.setBadgeBackgroundColor).toHaveBeenCalledWith({
-        color,
-        tabId,
-      });
-    } else {
-      expect(mockBrowser.action.setBadgeBackgroundColor).not.toHaveBeenCalled();
-    }
+    expect(vi.mocked(mockBrowser.action.setBadgeBackgroundColor).mock.calls).toEqual(color ? [[{ color, tabId }]] : []);
   });
 });

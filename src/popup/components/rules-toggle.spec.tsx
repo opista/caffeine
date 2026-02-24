@@ -62,6 +62,9 @@ describe("RulesToggle", () => {
     });
   });
 
+  const PAGE_TITLE = "Always keep this exact page awake";
+  const WEBSITE_TITLE = "Always keep this entire website awake";
+
   it("should verify mocking setup", () => {
     // Basic test to ensure render works
     const { container } = render(<RulesToggle />);
@@ -84,8 +87,8 @@ describe("RulesToggle", () => {
   it("should render checkboxes with correct descriptions", () => {
     render(<RulesToggle />);
 
-    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
-    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
+    const pageCheckbox = screen.getByTestId(`checkbox-${PAGE_TITLE}`);
+    const domainCheckbox = screen.getByTestId(`checkbox-${WEBSITE_TITLE}`);
 
     expect(pageCheckbox).toBeTruthy();
     expect(pageCheckbox.getAttribute("data-description")).toBe("example.com/path");
@@ -103,8 +106,8 @@ describe("RulesToggle", () => {
 
     render(<RulesToggle />);
 
-    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
-    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
+    const pageCheckbox = screen.getByTestId(`checkbox-${PAGE_TITLE}`);
+    const domainCheckbox = screen.getByTestId(`checkbox-${WEBSITE_TITLE}`);
 
     expect(pageCheckbox.getAttribute("data-checked")).toBe("true");
     expect(domainCheckbox.getAttribute("data-checked")).toBe("false");
@@ -112,7 +115,7 @@ describe("RulesToggle", () => {
 
   it("should call togglePageRule when page rule checkbox is clicked", () => {
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
+    const pageCheckbox = screen.getByTestId(`checkbox-${PAGE_TITLE}`);
 
     fireEvent.click(pageCheckbox);
 
@@ -121,7 +124,7 @@ describe("RulesToggle", () => {
 
   it("should call toggleDomainRule when domain rule checkbox is clicked", () => {
     render(<RulesToggle />);
-    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
+    const domainCheckbox = screen.getByTestId(`checkbox-${WEBSITE_TITLE}`);
 
     fireEvent.click(domainCheckbox);
 
@@ -140,7 +143,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
+    const pageCheckbox = screen.getByTestId(`checkbox-${PAGE_TITLE}`);
 
     fireEvent.click(pageCheckbox);
 
@@ -160,7 +163,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
+    const pageCheckbox = screen.getByTestId(`checkbox-${PAGE_TITLE}`);
 
     fireEvent.click(pageCheckbox);
 
@@ -175,16 +178,15 @@ describe("RulesToggle", () => {
       toggleDomainRule: mockToggleDomainRule,
     });
     mockUseScopedPermissions.mockReturnValue({
-      hasScopedPermission: false, // Permission missing (unlikely state if rule is ON, but possible if permissions revoked externally)
+      hasScopedPermission: false,
       requestScopedPermission: mockRequestScopedPermission,
     });
 
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
+    const pageCheckbox = screen.getByTestId(`checkbox-${PAGE_TITLE}`);
 
     fireEvent.click(pageCheckbox);
 
-    // Clicking when ON toggles it OFF. We should verify requestScopedPermission is NOT called.
     expect(mockTogglePageRule).toHaveBeenCalled();
     expect(mockRequestScopedPermission).not.toHaveBeenCalled();
   });
@@ -201,7 +203,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
+    const domainCheckbox = screen.getByTestId(`checkbox-${WEBSITE_TITLE}`);
 
     fireEvent.click(domainCheckbox);
 

@@ -47,8 +47,8 @@ describe("PermissionWarning", () => {
     });
     render(<PermissionWarning url={testUrl} hasRule={true} />);
 
-    expect(screen.getByText("Permission required")).toBeDefined();
-    expect(screen.getByText("Please enable site access to allow this rule to work.")).toBeDefined();
+    expect(screen.getByText("Access needed")).toBeDefined();
+    expect(screen.getByText(/Please allow the extension to read this site/)).toBeDefined();
 
     const button = screen.getByRole("button", { name: /Grant Permission/i });
     expect(button).toBeDefined();

@@ -25,8 +25,8 @@ describe("GlobalToggle", () => {
 
     render(<GlobalToggle />);
 
-    expect(screen.getByText(/Advanced permissions are required/i)).toBeTruthy();
-    expect(screen.getByText(/Enable Access to All Websites/i)).toBeTruthy();
+    expect(screen.getByText(/Tired of permission popups\?/i)).toBeTruthy();
+    expect(screen.getByText(/Allow on all websites/i)).toBeTruthy();
   });
 
   it("should call toggleGlobalPermission when the button is clicked", () => {
@@ -38,7 +38,7 @@ describe("GlobalToggle", () => {
 
     render(<GlobalToggle />);
 
-    const button = screen.getByRole("button", { name: /Enable Access to All Websites/i });
+    const button = screen.getByRole("button", { name: /Allow on all websites/i });
     fireEvent.click(button);
 
     expect(toggleGlobalPermissionMock).toHaveBeenCalled();

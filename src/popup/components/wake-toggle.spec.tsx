@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
-import browser from "webextension-polyfill";
 import { WakeToggle } from "./wake-toggle";
 import { useActiveTab } from "../hooks/use-active-tab";
 import { usePlatform } from "../hooks/use-platform";
@@ -37,8 +36,8 @@ describe("WakeToggle", () => {
   it("renders correctly in inactive state", () => {
     render(<WakeToggle />);
 
-    expect(screen.getByText("Wake Lock is Inactive")).toBeTruthy();
-    expect(screen.getByText("Tap to keep screen awake")).toBeTruthy();
+    expect(screen.getByText("Screen can sleep")).toBeTruthy();
+    expect(screen.getByText("Tap to keep the screen on.")).toBeTruthy();
 
     const input = screen.getByRole("switch") as HTMLInputElement;
     expect(input).toBeDefined();
@@ -60,8 +59,8 @@ describe("WakeToggle", () => {
 
     render(<WakeToggle />);
 
-    expect(screen.getByText("Wake Lock is Active")).toBeTruthy();
-    expect(screen.getByText("Preventing sleep automatically")).toBeTruthy();
+    expect(screen.getByText("Screen staying awake")).toBeTruthy();
+    expect(screen.getByText("This tab will not go to sleep.")).toBeTruthy();
 
     const input = screen.getByRole("switch") as HTMLInputElement;
     expect(input.checked).toBe(true);
@@ -103,12 +102,14 @@ describe("WakeToggle", () => {
 
     // Check styling for unsupported state
     const card = input.closest("label");
-    expect(card?.className).toContain("opacity-60");
+    expect(card?.className).toContain("opacity-75");
     expect(card?.className).toContain("cursor-not-allowed");
 
     // Check that WakeError is surfaced
-    expect(screen.getByText("Secure Connection Required")).toBeDefined();
-    expect(screen.getByText("Wake Lock can only be active on secure HTTPS pages.")).toBeDefined();
+    expect(screen.getByText("Secure connection required")).toBeDefined();
+    expect(
+      screen.getByText(/For security, your browser only allows the screen to stay awake on secure websites/),
+    ).toBeDefined();
   });
 
   it("renders error message when status is error", () => {
@@ -121,12 +122,11 @@ describe("WakeToggle", () => {
 
     render(<WakeToggle />);
 
-    expect(screen.getAllByText("System prevented Wake Lock").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Check your OS battery settings or power saving mode.").length).toBeGreaterThan(0);
-
-    // Check "Fix Issue" button exists
-    const fixButton = screen.getByRole("button", { name: /Fix Issue/i });
-    expect(fixButton).toBeDefined();
+    expect(screen.getAllByText("Blocked by device settings").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Your phone's Battery Saver or Low Power Mode is preventing the screen from staying on/)
+        .length,
+    ).toBeGreaterThan(0);
   });
 
   it("calls toggleSession when clicked", () => {
@@ -136,23 +136,6 @@ describe("WakeToggle", () => {
     fireEvent.click(input);
 
     expect(mockToggleSession).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls browser.tabs.create when "Fix Issue" is clicked', () => {
-    (useWakeLock as Mock).mockReturnValue({
-      status: "error",
-      errorMsg: ErrorCode.SYSTEM_BLOCKED,
-      toggleSession: mockToggleSession,
-    });
-
-    render(<WakeToggle />);
-
-    const fixButton = screen.getByRole("button", { name: /Fix Issue/i });
-    fireEvent.click(fixButton);
-
-    expect(browser.tabs.create).toHaveBeenCalledWith({
-      url: "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API",
-    });
   });
 
   it("passes isAndroid correctly to useWakeLock", () => {
