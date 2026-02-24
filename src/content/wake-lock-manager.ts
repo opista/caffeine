@@ -1,4 +1,4 @@
-import { ExtensionMessage } from "../types";
+import { ExtensionMessage, MessageType } from "../types";
 import browser from "webextension-polyfill";
 import { showToast } from "./show-toast";
 
@@ -24,7 +24,7 @@ export class WakeLockManager {
     if (this.platformInitialized) return;
 
     try {
-      const response = await browser.runtime.sendMessage({ type: "GET_PLATFORM_INFO" });
+      const response = await browser.runtime.sendMessage({ type: MessageType.GET_PLATFORM_INFO });
       if (response && response.os) {
         this.isAndroid = response.os === "android";
       }
@@ -35,11 +35,7 @@ export class WakeLockManager {
 
   public async start() {
     if (!this.isSupported) {
-      this.sendMessage({
-        type: "STATUS_UPDATE",
-        status: "error",
-        error: "Wake Lock API not supported",
-      });
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: "Wake Lock API not supported" });
       return;
     }
 
@@ -61,7 +57,7 @@ export class WakeLockManager {
     window.removeEventListener("focus", this.handleVisibilityChange);
     window.removeEventListener("pageshow", this.handlePageShow);
     browser.runtime.onMessage.removeListener(this.handleMessage);
-    this.sendMessage({ type: "STATUS_UPDATE", status: "inactive" });
+    this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "inactive" });
   }
 
   private async requestWakeLock() {
@@ -69,7 +65,7 @@ export class WakeLockManager {
 
     if (!window.isSecureContext) {
       this.sendMessage({
-        type: "STATUS_UPDATE",
+        type: MessageType.STATUS_UPDATE,
         status: "error",
         error: "Wake Lock requires a secure (HTTPS) connection",
       });
@@ -79,7 +75,7 @@ export class WakeLockManager {
     try {
       this.wakeLock = await navigator.wakeLock.request("screen");
       this.wakeLock?.addEventListener("release", this.handleLockRelease);
-      this.sendMessage({ type: "STATUS_UPDATE", status: "active" });
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "active" });
       if (this.isAndroid) showToast("☕ Caffeine active", "success");
     } catch (err: any) {
       // On Android, the popup steals focus from the page, causing
@@ -94,7 +90,7 @@ export class WakeLockManager {
           : err.name === "NotSupportedError"
             ? "Device does not support wake lock"
             : "Unknown error";
-      this.sendMessage({ type: "STATUS_UPDATE", status: "error", error: errorMsg });
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: errorMsg });
       if (this.isAndroid) showToast("⚠️ " + errorMsg, "error");
     }
   }
@@ -107,14 +103,14 @@ export class WakeLockManager {
   }
 
   private async handleMessage(message: ExtensionMessage) {
-    if (message.type === "RELEASE_LOCK") {
+    if (message.type === MessageType.RELEASE_LOCK) {
       await this.stop();
     }
   }
 
   private handleLockRelease() {
     if (!this.isEnabled) {
-      this.sendMessage({ type: "STATUS_UPDATE", status: "inactive" });
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "inactive" });
     }
     this.wakeLock = null;
   }

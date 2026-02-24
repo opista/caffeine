@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import browser from "webextension-polyfill";
 import { WakeLockManager } from "./wake-lock-manager";
+import { MessageType } from "../types";
 
 const mockBrowser = vi.mocked(browser, true);
 const mockSender = {} as browser.Runtime.MessageSender;
@@ -46,7 +47,7 @@ describe("WakeLockManager", () => {
     });
 
     mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
-      if (msg.type === "GET_PLATFORM_INFO") {
+      if (msg.type === MessageType.GET_PLATFORM_INFO) {
         return { os: "linux" };
       }
       return undefined;
@@ -66,7 +67,7 @@ describe("WakeLockManager", () => {
 
     expect(requestMock).toHaveBeenCalledWith("screen");
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
+      type: MessageType.STATUS_UPDATE,
       status: "active",
     });
   });
@@ -79,7 +80,7 @@ describe("WakeLockManager", () => {
 
     expect(releaseMock).toHaveBeenCalled();
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
+      type: MessageType.STATUS_UPDATE,
       status: "inactive",
     });
   });
@@ -146,7 +147,7 @@ describe("WakeLockManager", () => {
     await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
+      type: MessageType.STATUS_UPDATE,
       status: "error",
       error: "Wake Lock API not supported",
     });
@@ -160,7 +161,7 @@ describe("WakeLockManager", () => {
     await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
+      type: MessageType.STATUS_UPDATE,
       status: "error",
       error: "System blocked wake lock (check Battery Saver)",
     });
@@ -171,11 +172,11 @@ describe("WakeLockManager", () => {
     await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
     const onMessageListener = mockBrowser.runtime.onMessage.addListener.mock.calls[0][0];
-    await onMessageListener({ type: "RELEASE_LOCK" }, mockSender, mockSendResponse);
+    await onMessageListener({ type: MessageType.RELEASE_LOCK }, mockSender, mockSendResponse);
 
     expect(releaseMock).toHaveBeenCalled();
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
+      type: MessageType.STATUS_UPDATE,
       status: "inactive",
     });
   });

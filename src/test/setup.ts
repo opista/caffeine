@@ -29,7 +29,6 @@ vi.mock("webextension-polyfill", () => ({
       },
       query: vi.fn().mockResolvedValue([]),
       sendMessage: vi.fn().mockResolvedValue(undefined),
-      create: vi.fn().mockResolvedValue(undefined),
     },
     action: {
       setBadgeText: vi.fn().mockResolvedValue(undefined),
@@ -55,5 +54,5 @@ vi.mock("webextension-polyfill", () => ({
       contains: vi.fn().mockResolvedValue(true),
       remove: vi.fn().mockResolvedValue(true),
     },
-  }
+  },
 }));

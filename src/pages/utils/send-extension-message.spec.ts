@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { sendExtensionMessage } from "./send-extension-message";
 import browser from "webextension-polyfill";
-import { ExtensionMessage } from "../../types";
+import { ExtensionMessage, MessageType } from "../../types";
 
 describe("sendExtensionMessage", () => {
-  const message: ExtensionMessage = { type: "GET_STATUS" };
+  const message: ExtensionMessage = { type: MessageType.GET_STATUS };
 
   beforeEach(() => {
     vi.clearAllMocks();

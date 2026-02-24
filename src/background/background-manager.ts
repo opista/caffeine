@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { ExtensionMessage, LockStatus } from "../types";
+import { ExtensionMessage, LockStatus, MessageType } from "../types";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";
@@ -37,21 +37,21 @@ export class BackgroundManager {
     const senderTabId = sender.tab?.id;
 
     switch (message.type) {
-      case "STATUS_UPDATE":
+      case MessageType.STATUS_UPDATE:
         return this.handleStatusUpdate(message.status, senderTabId, message.error);
-      case "GET_STATUS":
+      case MessageType.GET_STATUS:
         return this.handleGetStatus();
-      case "TOGGLE_SESSION":
+      case MessageType.TOGGLE_SESSION:
         return this.handleToggleSession();
-      case "GET_PLATFORM_INFO":
+      case MessageType.GET_PLATFORM_INFO:
         return this.handleGetPlatformInfo();
-      case "ADD_RULE":
+      case MessageType.ADD_RULE:
         return this.ruleManager.addRule(message.ruleType, message.url);
-      case "REMOVE_RULE":
+      case MessageType.REMOVE_RULE:
         return this.ruleManager.removeRule(message.ruleType, message.url);
-      case "GET_RULE_FOR_TAB":
+      case MessageType.GET_RULE_FOR_TAB:
         return this.handleGetRuleForTab();
-      case "GET_PERMISSION_FOR_TAB":
+      case MessageType.GET_PERMISSION_FOR_TAB:
         return this.handleGetPermissionForTab();
     }
   }
@@ -88,7 +88,7 @@ export class BackgroundManager {
 
     if (currentStatus === "active") {
       try {
-        await browser.tabs.sendMessage(activeTabId, { type: "RELEASE_LOCK" });
+        await browser.tabs.sendMessage(activeTabId, { type: MessageType.RELEASE_LOCK });
       } catch {
         await this.sessionManager.delete(activeTabId);
         updateBadge(activeTabId, "inactive");

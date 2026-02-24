@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { renderHook } from "../test/utils";
 import { useRules } from "./use-rules";
 import browser from "webextension-polyfill";
+import { MessageType } from "../types";
 
 const mockBrowser = vi.mocked(browser, true);
 
@@ -21,7 +22,7 @@ describe("useRules", () => {
 
     await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
-    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({ type: "GET_RULE_FOR_TAB" });
+    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({ type: MessageType.GET_RULE_FOR_TAB });
   });
 
   it("should toggle page rule: add if missing", async () => {
@@ -31,7 +32,7 @@ describe("useRules", () => {
     await result.current.togglePageRule("https://example.com/page");
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "ADD_RULE",
+      type: MessageType.ADD_RULE,
       ruleType: "page",
       url: "https://example.com/page",
     });
@@ -49,7 +50,7 @@ describe("useRules", () => {
     await result.current.togglePageRule("https://example.com/page");
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "REMOVE_RULE",
+      type: MessageType.REMOVE_RULE,
       ruleType: "page",
       url: "https://example.com/page",
     });
@@ -62,7 +63,7 @@ describe("useRules", () => {
     await result.current.toggleDomainRule("https://example.com/page");
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "ADD_RULE",
+      type: MessageType.ADD_RULE,
       ruleType: "domain",
       url: "https://example.com/page",
     });
@@ -80,7 +81,7 @@ describe("useRules", () => {
     await result.current.toggleDomainRule("https://example.com/page");
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "REMOVE_RULE",
+      type: MessageType.REMOVE_RULE,
       ruleType: "domain",
       url: "https://example.com/page",
     });
@@ -99,7 +100,7 @@ describe("useRules", () => {
     await result.current.togglePageRule("https://example.com/page");
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "REMOVE_RULE",
+      type: MessageType.REMOVE_RULE,
       ruleType: "page",
       url: "https://example.com/page",
     });

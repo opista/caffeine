@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import browser from "webextension-polyfill";
-import { LockStatus } from "../types";
+import { LockStatus, MessageType } from "../types";
 import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 
 export const useWakeLock = (isAndroid: boolean) => {
@@ -8,7 +8,7 @@ export const useWakeLock = (isAndroid: boolean) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    sendExtensionMessage({ type: "GET_STATUS" }).then((response) => {
+    sendExtensionMessage({ type: MessageType.GET_STATUS }).then((response) => {
       if (response?.status) {
         setStatus(response.status);
         if (response.error) setErrorMsg(response.error);
@@ -16,7 +16,7 @@ export const useWakeLock = (isAndroid: boolean) => {
     });
 
     const messageHandler = (message: any) => {
-      if (message.type === "STATUS_UPDATE" && message.status) {
+      if (message.type === MessageType.STATUS_UPDATE && message.status) {
         setStatus(message.status);
         if (message.error) setErrorMsg(message.error);
       }
@@ -27,7 +27,7 @@ export const useWakeLock = (isAndroid: boolean) => {
   }, []);
 
   const toggleSession = useCallback(async () => {
-    const response = await sendExtensionMessage({ type: "TOGGLE_SESSION" });
+    const response = await sendExtensionMessage({ type: MessageType.TOGGLE_SESSION });
 
     if (response) {
       if (response.status === "error") {
