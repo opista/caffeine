@@ -2,7 +2,7 @@
   "name": "caffeine",
   "version": "0.1.0",
   "private": true,
-  "description": "Keep your screen awake",
+  "description": "Prevent your device from sleeping",
   "type": "module",
   "scripts": {
     "dev": "wxt",
