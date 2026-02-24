@@ -8,13 +8,17 @@ import { getOperatingSystem } from "./get-operating-system";
 import { getRootDomain } from "../utils/get-root-domain";
 import { createDomainOriginPermissionString } from "./create-domain-origin-permission-string";
 
-type MessageHandler = (message: ExtensionMessage, senderTabId?: number) => Promise<any> | any;
+type MessageHandler<T extends ExtensionMessage> = (message: T, senderTabId?: number) => Promise<any> | any;
+
+type MessageHandlers = {
+  [K in MessageType]?: MessageHandler<Extract<ExtensionMessage, { type: K }>>;
+};
 
 export class BackgroundManager {
     private isInitialized = false;
     private isProcessing = false;
     private lastActiveWebTabId: number | undefined;
-    private messageHandlers: Partial<Record<MessageType, MessageHandler>> = {};
+    private messageHandlers: MessageHandlers = {};
 
     constructor(
         private sessionManager: SessionManager = new SessionManager(),
@@ -40,22 +44,16 @@ export class BackgroundManager {
     private initializeMessageHandlers() {
         this.messageHandlers = {
             [MessageType.STATUS_UPDATE]: (message, senderTabId) => {
-                // Since this handler is called based on the message type, we can cast it safely
-                // or rely on the caller to dispatch correctly.
-                // However, TS might need convincing if we want to access properties specific to STATUS_UPDATE.
-                const msg = message as Extract<ExtensionMessage, { type: MessageType.STATUS_UPDATE }>;
-                return this.handleStatusUpdate(msg.status, senderTabId, msg.error);
+                return this.handleStatusUpdate(message.status, senderTabId, message.error);
             },
             [MessageType.GET_STATUS]: () => this.handleGetStatus(),
             [MessageType.TOGGLE_SESSION]: () => this.handleToggleSession(),
             [MessageType.GET_PLATFORM_INFO]: () => this.handleGetPlatformInfo(),
             [MessageType.ADD_RULE]: (message) => {
-                const msg = message as Extract<ExtensionMessage, { type: MessageType.ADD_RULE }>;
-                return this.ruleManager.addRule(msg.ruleType, msg.url);
+                return this.ruleManager.addRule(message.ruleType, message.url);
             },
             [MessageType.REMOVE_RULE]: (message) => {
-                const msg = message as Extract<ExtensionMessage, { type: MessageType.REMOVE_RULE }>;
-                return this.ruleManager.removeRule(msg.ruleType, msg.url);
+                return this.ruleManager.removeRule(message.ruleType, message.url);
             },
             [MessageType.GET_RULE_FOR_TAB]: () => this.handleGetRuleForTab(),
             [MessageType.GET_PERMISSION_FOR_TAB]: () => this.handleGetPermissionForTab(),
@@ -64,7 +62,7 @@ export class BackgroundManager {
 
     private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
         const senderTabId = sender.tab?.id;
-        const handler = this.messageHandlers[message.type];
+        const handler = this.messageHandlers[message.type] as MessageHandler<ExtensionMessage> | undefined;
 
         if (handler) {
             return handler(message, senderTabId);
