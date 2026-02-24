@@ -8,17 +8,10 @@ import { getOperatingSystem } from "./get-operating-system";
 import { getRootDomain } from "../utils/get-root-domain";
 import { createDomainOriginPermissionString } from "./create-domain-origin-permission-string";
 
-type MessageHandler<T extends ExtensionMessage> = (message: T, senderTabId?: number) => Promise<any> | any;
-
-type MessageHandlers = {
-  [K in MessageType]?: MessageHandler<Extract<ExtensionMessage, { type: K }>>;
-};
-
 export class BackgroundManager {
     private isInitialized = false;
     private isProcessing = false;
     private lastActiveWebTabId: number | undefined;
-    private messageHandlers: MessageHandlers = {};
 
     constructor(
         private sessionManager: SessionManager = new SessionManager(),
@@ -28,7 +21,6 @@ export class BackgroundManager {
         this.handleTabRemoved = this.handleTabRemoved.bind(this);
         this.handleTabUpdated = this.handleTabUpdated.bind(this);
         this.handleTabActivated = this.handleTabActivated.bind(this);
-        this.initializeMessageHandlers();
     }
 
   public init() {
@@ -41,35 +33,26 @@ export class BackgroundManager {
         browser.tabs.onActivated.addListener(this.handleTabActivated);
     }
 
-    private initializeMessageHandlers() {
-        this.messageHandlers = {
-            [MessageType.STATUS_UPDATE]: (message, senderTabId) => {
-                return this.handleStatusUpdate(message.status, senderTabId, message.error);
-            },
-            [MessageType.GET_STATUS]: () => this.handleGetStatus(),
-            [MessageType.TOGGLE_SESSION]: () => this.handleToggleSession(),
-            [MessageType.GET_PLATFORM_INFO]: () => this.handleGetPlatformInfo(),
-            [MessageType.ADD_RULE]: (message) => {
-                return this.ruleManager.addRule(message.ruleType, message.url);
-            },
-            [MessageType.REMOVE_RULE]: (message) => {
-                return this.ruleManager.removeRule(message.ruleType, message.url);
-            },
-            [MessageType.GET_RULE_FOR_TAB]: () => this.handleGetRuleForTab(),
-            [MessageType.GET_PERMISSION_FOR_TAB]: () => this.handleGetPermissionForTab(),
-        };
-    }
-
     private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
         const senderTabId = sender.tab?.id;
-        const handler = this.messageHandlers[message.type];
 
-        if (handler) {
-            // We know that if message.type matches the handler key, the message payload matches the handler argument.
-            // However, TS cannot correlate dynamic property access with union narrowing.
-            // Using 'any' here is a localized compromise to avoid a misleading "MessageHandler<ExtensionMessage>" cast
-            // which implies the handler accepts ANY message (it does not).
-            return (handler as any)(message, senderTabId);
+        switch (message.type) {
+            case MessageType.STATUS_UPDATE:
+                return this.handleStatusUpdate(message.status, senderTabId, message.error);
+            case MessageType.GET_STATUS:
+                return this.handleGetStatus();
+            case MessageType.TOGGLE_SESSION:
+                return this.handleToggleSession();
+            case MessageType.GET_PLATFORM_INFO:
+                return this.handleGetPlatformInfo();
+            case MessageType.ADD_RULE:
+                return this.ruleManager.addRule(message.ruleType, message.url);
+            case MessageType.REMOVE_RULE:
+                return this.ruleManager.removeRule(message.ruleType, message.url);
+            case MessageType.GET_RULE_FOR_TAB:
+                return this.handleGetRuleForTab();
+            case MessageType.GET_PERMISSION_FOR_TAB:
+                return this.handleGetPermissionForTab();
         }
     }
 
