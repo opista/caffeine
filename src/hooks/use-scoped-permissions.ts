@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import { getRootDomain } from "../utils/get-root-domain";
 import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 import { createDomainOriginPermissionString } from "../background/create-domain-origin-permission-string";
-import { MessageType } from '../types';
+import { MessageType } from "../types";
 
 const fetchScopedPermissions = async (url: URL | null) => {
   if (!url) return false;

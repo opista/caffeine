@@ -20,24 +20,24 @@ export class WakeLockManager {
     }
   }
 
-    private async initPlatform() {
-        if (this.platformInitialized) return;
-        
-        try {
-            const response = await browser.runtime.sendMessage({ type: MessageType.GET_PLATFORM_INFO });
-            if (response && response.os) {
-                this.isAndroid = response.os === 'android';
-            }
-        } finally {
-            this.platformInitialized = true;
-        }
-    }
+  private async initPlatform() {
+    if (this.platformInitialized) return;
 
-    public async start() {
-        if (!this.isSupported) {
-             this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: "Wake Lock API not supported" });
-             return;
-        }
+    try {
+      const response = await browser.runtime.sendMessage({ type: MessageType.GET_PLATFORM_INFO });
+      if (response && response.os) {
+        this.isAndroid = response.os === "android";
+      }
+    } finally {
+      this.platformInitialized = true;
+    }
+  }
+
+  public async start() {
+    if (!this.isSupported) {
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: "Wake Lock API not supported" });
+      return;
+    }
 
     await this.initPlatform();
     this.isEnabled = true;
@@ -50,45 +50,50 @@ export class WakeLockManager {
     browser.runtime.onMessage.addListener(this.handleMessage);
   }
 
-    public async stop() {
-        this.isEnabled = false;
-        await this.releaseWakeLock();
-        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-        window.removeEventListener('focus', this.handleVisibilityChange);
-        window.removeEventListener('pageshow', this.handlePageShow);
-        browser.runtime.onMessage.removeListener(this.handleMessage);
-        this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "inactive" });
-    }
+  public async stop() {
+    this.isEnabled = false;
+    await this.releaseWakeLock();
+    document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+    window.removeEventListener("focus", this.handleVisibilityChange);
+    window.removeEventListener("pageshow", this.handlePageShow);
+    browser.runtime.onMessage.removeListener(this.handleMessage);
+    this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "inactive" });
+  }
 
   private async requestWakeLock() {
     if (!this.isEnabled) return;
 
-        if (!window.isSecureContext) {
-            this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: "Wake Lock requires a secure (HTTPS) connection" });
-            return;
-        }
-
-        try {
-            this.wakeLock = await navigator.wakeLock.request('screen');
-            this.wakeLock?.addEventListener('release', this.handleLockRelease);
-            this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "active" });
-            if (this.isAndroid) showToast("☕ Caffeine active", "success");
-        } catch (err: any) {
-            // On Android, the popup steals focus from the page, causing
-            // NotAllowedError on the initial request. The focus listener
-            // will retry when the popup closes and focus returns.
-            if (err.name === 'NotAllowedError' && this.isAndroid && !this.wakeLock) {
-                return;
-            }
-            const errorMsg = err.name === 'NotAllowedError'
-                ? "System blocked wake lock (check Battery Saver)"
-                : err.name === 'NotSupportedError'
-                    ? "Device does not support wake lock"
-                    : "Unknown error";
-            this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: errorMsg });
-            if (this.isAndroid) showToast("⚠️ " + errorMsg, "error");
-        }
+    if (!window.isSecureContext) {
+      this.sendMessage({
+        type: MessageType.STATUS_UPDATE,
+        status: "error",
+        error: "Wake Lock requires a secure (HTTPS) connection",
+      });
+      return;
     }
+
+    try {
+      this.wakeLock = await navigator.wakeLock.request("screen");
+      this.wakeLock?.addEventListener("release", this.handleLockRelease);
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "active" });
+      if (this.isAndroid) showToast("☕ Caffeine active", "success");
+    } catch (err: any) {
+      // On Android, the popup steals focus from the page, causing
+      // NotAllowedError on the initial request. The focus listener
+      // will retry when the popup closes and focus returns.
+      if (err.name === "NotAllowedError" && this.isAndroid && !this.wakeLock) {
+        return;
+      }
+      const errorMsg =
+        err.name === "NotAllowedError"
+          ? "System blocked wake lock (check Battery Saver)"
+          : err.name === "NotSupportedError"
+            ? "Device does not support wake lock"
+            : "Unknown error";
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: errorMsg });
+      if (this.isAndroid) showToast("⚠️ " + errorMsg, "error");
+    }
+  }
 
   private async releaseWakeLock() {
     if (this.wakeLock) {
@@ -97,18 +102,18 @@ export class WakeLockManager {
     }
   }
 
-    private async handleMessage(message: ExtensionMessage) {
-        if (message.type === MessageType.RELEASE_LOCK) {
-            await this.stop();
-        }
+  private async handleMessage(message: ExtensionMessage) {
+    if (message.type === MessageType.RELEASE_LOCK) {
+      await this.stop();
     }
+  }
 
-    private handleLockRelease() {
-        if (!this.isEnabled) {
-             this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "inactive" });
-        }
-        this.wakeLock = null;
+  private handleLockRelease() {
+    if (!this.isEnabled) {
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "inactive" });
     }
+    this.wakeLock = null;
+  }
 
   private handleVisibilityChange() {
     const documentIsVisible = document.visibilityState === "visible";

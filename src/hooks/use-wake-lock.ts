@@ -27,7 +27,7 @@ export const useWakeLock = (isAndroid: boolean) => {
   }, []);
 
   const toggleSession = useCallback(async () => {
-      const response = await sendExtensionMessage({ type: MessageType.TOGGLE_SESSION });
+    const response = await sendExtensionMessage({ type: MessageType.TOGGLE_SESSION });
 
     if (response) {
       if (response.status === "error") {

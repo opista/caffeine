@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { RuleState, MessageType } from '../types';
-import { sendExtensionMessage } from '../pages/utils/send-extension-message';
+import { useState, useEffect, useCallback } from "react";
+import { RuleState, MessageType } from "../types";
+import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 
 export const useRules = (url: URL | null) => {
   const [ruleState, setRuleState] = useState<RuleState | null>(null);
@@ -8,8 +8,8 @@ export const useRules = (url: URL | null) => {
   const fetchRules = useCallback(async () => {
     if (!url) return;
     try {
-        const response = await sendExtensionMessage({ type: MessageType.GET_RULE_FOR_TAB });
-        setRuleState(response?.ruleState ?? null);
+      const response = await sendExtensionMessage({ type: MessageType.GET_RULE_FOR_TAB });
+      setRuleState(response?.ruleState ?? null);
     } catch (e) {
       console.error("Failed to fetch rules:", e);
     }

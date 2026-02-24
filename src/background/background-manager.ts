@@ -9,52 +9,52 @@ import { getRootDomain } from "../utils/get-root-domain";
 import { createDomainOriginPermissionString } from "./create-domain-origin-permission-string";
 
 export class BackgroundManager {
-    private isInitialized = false;
-    private isProcessing = false;
-    private lastActiveWebTabId: number | undefined;
+  private isInitialized = false;
+  private isProcessing = false;
+  private lastActiveWebTabId: number | undefined;
 
-    constructor(
-        private sessionManager: SessionManager = new SessionManager(),
-        private ruleManager: RuleManager = new RuleManager(),
-    ) {
-        this.handleMessage = this.handleMessage.bind(this);
-        this.handleTabRemoved = this.handleTabRemoved.bind(this);
-        this.handleTabUpdated = this.handleTabUpdated.bind(this);
-        this.handleTabActivated = this.handleTabActivated.bind(this);
-    }
+  constructor(
+    private sessionManager: SessionManager = new SessionManager(),
+    private ruleManager: RuleManager = new RuleManager(),
+  ) {
+    this.handleMessage = this.handleMessage.bind(this);
+    this.handleTabRemoved = this.handleTabRemoved.bind(this);
+    this.handleTabUpdated = this.handleTabUpdated.bind(this);
+    this.handleTabActivated = this.handleTabActivated.bind(this);
+  }
 
   public init() {
     if (this.isInitialized) return;
     this.isInitialized = true;
 
-        browser.runtime.onMessage.addListener(this.handleMessage);
-        browser.tabs.onRemoved.addListener(this.handleTabRemoved);
-        browser.tabs.onUpdated.addListener(this.handleTabUpdated);
-        browser.tabs.onActivated.addListener(this.handleTabActivated);
-    }
+    browser.runtime.onMessage.addListener(this.handleMessage);
+    browser.tabs.onRemoved.addListener(this.handleTabRemoved);
+    browser.tabs.onUpdated.addListener(this.handleTabUpdated);
+    browser.tabs.onActivated.addListener(this.handleTabActivated);
+  }
 
-    private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
-        const senderTabId = sender.tab?.id;
+  private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
+    const senderTabId = sender.tab?.id;
 
-        switch (message.type) {
-            case MessageType.STATUS_UPDATE:
-                return this.handleStatusUpdate(message.status, senderTabId, message.error);
-            case MessageType.GET_STATUS:
-                return this.handleGetStatus();
-            case MessageType.TOGGLE_SESSION:
-                return this.handleToggleSession();
-            case MessageType.GET_PLATFORM_INFO:
-                return this.handleGetPlatformInfo();
-            case MessageType.ADD_RULE:
-                return this.ruleManager.addRule(message.ruleType, message.url);
-            case MessageType.REMOVE_RULE:
-                return this.ruleManager.removeRule(message.ruleType, message.url);
-            case MessageType.GET_RULE_FOR_TAB:
-                return this.handleGetRuleForTab();
-            case MessageType.GET_PERMISSION_FOR_TAB:
-                return this.handleGetPermissionForTab();
-        }
+    switch (message.type) {
+      case MessageType.STATUS_UPDATE:
+        return this.handleStatusUpdate(message.status, senderTabId, message.error);
+      case MessageType.GET_STATUS:
+        return this.handleGetStatus();
+      case MessageType.TOGGLE_SESSION:
+        return this.handleToggleSession();
+      case MessageType.GET_PLATFORM_INFO:
+        return this.handleGetPlatformInfo();
+      case MessageType.ADD_RULE:
+        return this.ruleManager.addRule(message.ruleType, message.url);
+      case MessageType.REMOVE_RULE:
+        return this.ruleManager.removeRule(message.ruleType, message.url);
+      case MessageType.GET_RULE_FOR_TAB:
+        return this.handleGetRuleForTab();
+      case MessageType.GET_PERMISSION_FOR_TAB:
+        return this.handleGetPermissionForTab();
     }
+  }
 
   private async handleStatusUpdate(status: LockStatus, tabId?: number, error?: string) {
     if (!tabId) return;
@@ -86,25 +86,25 @@ export class BackgroundManager {
 
     const { status: currentStatus } = await this.sessionManager.get(activeTabId);
 
-        if (currentStatus === "active") {
-            try {
-                await browser.tabs.sendMessage(activeTabId, { type: MessageType.RELEASE_LOCK });
-            } catch {
-                await this.sessionManager.delete(activeTabId);
-                updateBadge(activeTabId, "inactive");
-            } finally {
-                this.isProcessing = false;
-            }
-            return { status: "inactive" };
-        } else {
-            const tab = await browser.tabs.get(activeTabId);
-            if (!tab.url?.startsWith('https://')) {
-                this.isProcessing = false;
-                const error = "Wake Lock requires a secure (HTTPS) page";
-                await this.sessionManager.set(activeTabId, "error", error);
-                updateBadge(activeTabId, "error");
-                return { status: "error", error };
-            }
+    if (currentStatus === "active") {
+      try {
+        await browser.tabs.sendMessage(activeTabId, { type: MessageType.RELEASE_LOCK });
+      } catch {
+        await this.sessionManager.delete(activeTabId);
+        updateBadge(activeTabId, "inactive");
+      } finally {
+        this.isProcessing = false;
+      }
+      return { status: "inactive" };
+    } else {
+      const tab = await browser.tabs.get(activeTabId);
+      if (!tab.url?.startsWith("https://")) {
+        this.isProcessing = false;
+        const error = "Wake Lock requires a secure (HTTPS) page";
+        await this.sessionManager.set(activeTabId, "error", error);
+        updateBadge(activeTabId, "error");
+        return { status: "error", error };
+      }
 
       try {
         await injectContentScript(activeTabId);

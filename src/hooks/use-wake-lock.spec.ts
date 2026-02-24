@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 import browser from "webextension-polyfill";
-import { useWakeLock } from './use-wake-lock';
-import { renderHook } from '../test/utils';
-import { act } from 'react';
-import { MessageType } from '../types';
+import { useWakeLock } from "./use-wake-lock";
+import { renderHook } from "../test/utils";
+import { act } from "react";
+import { MessageType } from "../types";
 
 // Mock browser
 const mockAddListener = vi.fn();
 const mockRemoveListener = vi.fn();
 const mockSendMessage = vi.fn();
 
-vi.mock('webextension-polyfill', () => ({
+vi.mock("webextension-polyfill", () => ({
   default: {
     runtime: {
       sendMessage: (...args: any[]) => mockSendMessage(...args),
@@ -93,7 +93,7 @@ describe("useWakeLock", () => {
     });
 
     expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: MessageType.TOGGLE_SESSION });
-    expect(result.current.status).toBe('inactive');
+    expect(result.current.status).toBe("inactive");
   });
 
   it("should close window on android when pending", async () => {
@@ -113,7 +113,7 @@ describe("useWakeLock", () => {
 
     act(() => {
       vi.advanceTimersByTime(300);
-    });``
+    });
 
     expect(window.close).toHaveBeenCalled();
   });
@@ -133,23 +133,23 @@ describe("useWakeLock", () => {
     expect(window.close).not.toHaveBeenCalled();
   });
 
-  it('should handle error during toggle session', async () => {
+  it("should handle error during toggle session", async () => {
     mockSendExtensionMessage
-      .mockResolvedValueOnce({ status: 'active' }) // For initial GET_STATUS
-      .mockResolvedValueOnce({ status: 'error', error: 'Test error message' }); // For TOGGLE_SESSION
+      .mockResolvedValueOnce({ status: "active" }) // For initial GET_STATUS
+      .mockResolvedValueOnce({ status: "error", error: "Test error message" }); // For TOGGLE_SESSION
 
     const { result } = renderHook(() => useWakeLock(false));
 
     // Wait for initial status to be set
     await vi.waitFor(() => {
-      expect(result.current.status).toBe('active');
+      expect(result.current.status).toBe("active");
     });
 
     await act(async () => {
       await result.current.toggleSession();
     });
 
-    expect(result.current.status).toBe('error');
-    expect(result.current.errorMsg).toBe('Test error message');
+    expect(result.current.status).toBe("error");
+    expect(result.current.errorMsg).toBe("Test error message");
   });
 });

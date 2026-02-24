@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RulesToggle } from "./rules-toggle";
 import { useActiveTab } from "../../hooks/use-active-tab";
 import { useRules } from "../../hooks/use-rules";
