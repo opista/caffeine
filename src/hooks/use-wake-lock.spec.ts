@@ -5,23 +5,6 @@ import { renderHook } from '../test/utils';
 import { act } from 'react';
 import { sendExtensionMessage } from '../pages/utils/send-extension-message';
 
-// Mock browser
-const mockAddListener = vi.fn();
-const mockRemoveListener = vi.fn();
-
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    runtime: {
-      sendMessage: vi.fn(), // Mocked but unused as we mock sendExtensionMessage directly
-      onMessage: {
-        addListener: (cb: any) => mockAddListener(cb),
-        removeListener: (cb: any) => mockRemoveListener(cb),
-      },
-      getPlatformInfo: vi.fn(),
-    },
-  },
-}));
-
 // Mock sendExtensionMessage
 vi.mock('../pages/utils/send-extension-message', () => ({
   sendExtensionMessage: vi.fn(),
@@ -57,7 +40,9 @@ describe('useWakeLock', () => {
 
   it('should update status when receiving STATUS_UPDATE message', async () => {
     let messageCallback: (msg: any) => void;
-    mockAddListener.mockImplementation((cb) => {
+
+    // Access the mocked addListener from global mock
+    vi.mocked(browser.runtime.onMessage.addListener).mockImplementation((cb: any) => {
         messageCallback = cb;
     });
     
@@ -78,7 +63,7 @@ describe('useWakeLock', () => {
   it('should clean up listener on unmount', () => {
     const { unmount } = renderHook(() => useWakeLock(false));
     unmount();
-    expect(mockRemoveListener).toHaveBeenCalled();
+    expect(vi.mocked(browser.runtime.onMessage.removeListener)).toHaveBeenCalled();
   });
 
   it('should handle toggle session', async () => {
