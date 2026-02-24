@@ -3,29 +3,19 @@ import browser from "webextension-polyfill";
 import { useWakeLock } from './use-wake-lock';
 import { renderHook } from '../test/utils';
 import { act } from 'react';
+import { sendExtensionMessage } from '../pages/utils/send-extension-message';
 
-// Mock browser
-const mockAddListener = vi.fn();
-const mockRemoveListener = vi.fn();
-const mockSendMessage = vi.fn();
-
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    runtime: {
-      sendMessage: (...args: any[]) => mockSendMessage(...args),
-      onMessage: {
-        addListener: (cb: any) => mockAddListener(cb),
-        removeListener: (cb: any) => mockRemoveListener(cb),
-      },
-      getPlatformInfo: vi.fn(),
-    },
-  },
+// Mock sendExtensionMessage
+vi.mock('../pages/utils/send-extension-message', () => ({
+  sendExtensionMessage: vi.fn(),
 }));
+
+const mockSendExtensionMessage = vi.mocked(sendExtensionMessage);
 
 describe('useWakeLock', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSendMessage.mockResolvedValue({});
+    mockSendExtensionMessage.mockResolvedValue({});
     
     // Mock window.close
     vi.stubGlobal('close', vi.fn());
@@ -39,18 +29,20 @@ describe('useWakeLock', () => {
   });
 
   it('should initialize with status from background', async () => {
-    mockSendMessage.mockResolvedValue({ status: 'active' });
+    mockSendExtensionMessage.mockResolvedValue({ status: 'active' });
     const { result } = renderHook(() => useWakeLock(false));
 
     await vi.waitFor(() => {
       expect(result.current.status).toBe('active');
     });
-    expect(mockSendMessage).toHaveBeenCalledWith({ type: 'GET_STATUS' });
+    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: 'GET_STATUS' });
   });
 
   it('should update status when receiving STATUS_UPDATE message', async () => {
     let messageCallback: (msg: any) => void;
-    mockAddListener.mockImplementation((cb) => {
+
+    // Access the mocked addListener from global mock
+    vi.mocked(browser.runtime.onMessage.addListener).mockImplementation((cb: any) => {
         messageCallback = cb;
     });
     
@@ -71,28 +63,33 @@ describe('useWakeLock', () => {
   it('should clean up listener on unmount', () => {
     const { unmount } = renderHook(() => useWakeLock(false));
     unmount();
-    expect(mockRemoveListener).toHaveBeenCalled();
+    expect(vi.mocked(browser.runtime.onMessage.removeListener)).toHaveBeenCalled();
   });
 
   it('should handle toggle session', async () => {
-    mockSendMessage.mockResolvedValue({ status: 'active' }); // Initial check
+    mockSendExtensionMessage
+      .mockResolvedValueOnce({ status: 'active' }) // For initial GET_STATUS
+      .mockResolvedValueOnce({ status: 'inactive' }); // For TOGGLE_SESSION
+
     const { result } = renderHook(() => useWakeLock(false));
     
-    // Reset mock to return new status on toggle
-    mockSendMessage.mockResolvedValue({ status: 'inactive' });
+    // Wait for initial status to be set
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe('active');
+    });
 
     await act(async () => {
       await result.current.toggleSession();
     });
 
-    expect(mockSendMessage).toHaveBeenCalledWith({ type: 'TOGGLE_SESSION' });
+    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: 'TOGGLE_SESSION' });
     expect(result.current.status).toBe('inactive');
   });
 
 
   
   it('should close window on android when pending', async () => {
-      mockSendMessage.mockResolvedValue({ status: 'pending' });
+      mockSendExtensionMessage.mockResolvedValue({ status: 'pending' });
       const { result } = renderHook(() => useWakeLock(true)); // isAndroid = true
       
       // Initial status check
@@ -115,7 +112,7 @@ describe('useWakeLock', () => {
   });
 
   it('should NOT close window on desktop when pending', async () => {
-      mockSendMessage.mockResolvedValue({ status: 'pending' });
+      mockSendExtensionMessage.mockResolvedValue({ status: 'pending' });
       const { result } = renderHook(() => useWakeLock(false)); // isAndroid = false
       
       await act(async () => {
@@ -127,5 +124,25 @@ describe('useWakeLock', () => {
       });
       
       expect(window.close).not.toHaveBeenCalled();
+  });
+
+  it('should handle error during toggle session', async () => {
+    mockSendExtensionMessage
+      .mockResolvedValueOnce({ status: 'active' }) // For initial GET_STATUS
+      .mockResolvedValueOnce({ status: 'error', error: 'Test error message' }); // For TOGGLE_SESSION
+
+    const { result } = renderHook(() => useWakeLock(false));
+
+    // Wait for initial status to be set
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe('active');
+    });
+
+    await act(async () => {
+      await result.current.toggleSession();
+    });
+
+    expect(result.current.status).toBe('error');
+    expect(result.current.errorMsg).toBe('Test error message');
   });
 });
