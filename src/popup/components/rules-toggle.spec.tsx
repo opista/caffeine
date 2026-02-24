@@ -6,9 +6,9 @@ import { useScopedPermissions } from "../hooks/use-scoped-permissions";
 import { render, fireEvent, screen } from "@testing-library/react";
 
 // Mocks
-vi.mock("../../hooks/use-active-tab");
-vi.mock("../../hooks/use-rules");
-vi.mock("../../hooks/use-scoped-permissions");
+vi.mock("../hooks/use-active-tab");
+vi.mock("../hooks/use-rules");
+vi.mock("../hooks/use-scoped-permissions");
 
 // Mock child components to isolate unit test
 vi.mock("./permission-warning", () => ({

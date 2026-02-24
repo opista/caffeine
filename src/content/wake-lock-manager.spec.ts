@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import browser from "webextension-polyfill";
 import { WakeLockManager } from "./wake-lock-manager";
-import { MessageType } from "../types";
+import { MessageType, ErrorCode } from "../types";
 
 const mockBrowser = vi.mocked(browser, true);
 const mockSender = {} as browser.Runtime.MessageSender;
@@ -148,7 +148,7 @@ describe("WakeLockManager", () => {
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
       type: MessageType.STATUS_UPDATE,
       status: "error",
-      error: "Wake Lock requires a secure (HTTPS) connection",
+      error: ErrorCode.NOT_SECURE,
     });
   });
 
@@ -166,7 +166,7 @@ describe("WakeLockManager", () => {
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
       type: MessageType.STATUS_UPDATE,
       status: "error",
-      error: "Wake Lock API not supported",
+      error: ErrorCode.NOT_SUPPORTED,
     });
   });
 
@@ -180,7 +180,7 @@ describe("WakeLockManager", () => {
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
       type: MessageType.STATUS_UPDATE,
       status: "error",
-      error: "System blocked wake lock (check Battery Saver)",
+      error: ErrorCode.SYSTEM_BLOCKED,
     });
   });
 

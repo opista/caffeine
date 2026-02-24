@@ -18,7 +18,7 @@ export const RulesToggle = () => {
   if (!isSupportedUrl) return null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <PermissionWarning hasRule={!!ruleState} url={url} />
 
       <Card>
@@ -26,7 +26,7 @@ export const RulesToggle = () => {
           title="Always keep awake for this URL"
           description={formatPageUrl(url) || "This page"}
           checked={ruleState?.hasPageRule ?? false}
-          className="border-b border-slate-50"
+          className="border-b border-slate-200"
           onClick={() => {
             if (url) {
               togglePageRule(url.href);

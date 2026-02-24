@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:firefox": "cross-env TARGET=firefox vite",
-    "dev:firefox:android": "web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir dist --adb-device 192.168.1.39:41095",
+    "dev:firefox:android": "cross-env TARGET=firefox vite build && web-ext run -t firefox-android --firefox-apk org.mozilla.fenix --source-dir dist --adb-device 192.168.1.39:36473",
     "build": "tsc && vite build",
     "build:firefox": "cross-env TARGET=firefox vite build",
     "test": "vitest",

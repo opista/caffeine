@@ -6,7 +6,7 @@ import { RuleManager } from "./rules/rule-manager";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { getOperatingSystem } from "./get-operating-system";
-import { MessageType } from "../types";
+import { MessageType, ErrorCode } from "../types";
 
 vi.mock("./get-operating-system");
 vi.mock("./session-manager");
@@ -98,12 +98,8 @@ describe("BackgroundManager", () => {
           mockSessionManager.get.mockResolvedValue({ status: "inactive" });
           const response = await sendMessage({ type: MessageType.TOGGLE_SESSION });
 
-          expect(response).toEqual({ status: "error", error: "Wake Lock requires a secure (HTTPS) page" });
-          expect(mockSessionManager.set).toHaveBeenCalledWith(
-            mockTabId,
-            "error",
-            "Wake Lock requires a secure (HTTPS) page",
-          );
+          expect(response).toEqual({ status: "error", error: ErrorCode.NOT_SECURE });
+          expect(mockSessionManager.set).toHaveBeenCalledWith(mockTabId, "error", ErrorCode.NOT_SECURE);
           expect(updateBadge).toHaveBeenCalledWith(mockTabId, "error");
         });
 
@@ -236,7 +232,7 @@ describe("BackgroundManager", () => {
         await triggerUpdate("complete");
 
         expect(mockInjectContentScript).not.toHaveBeenCalled();
-        expect(mockSessionManager.set).toHaveBeenCalledWith(mockTabId, "error", "Permission revoked");
+        expect(mockSessionManager.set).toHaveBeenCalledWith(mockTabId, "error", ErrorCode.PERMISSION_REQUIRED);
         expect(updateBadge).toHaveBeenCalledWith(mockTabId, "error");
       });
 

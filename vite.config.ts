@@ -25,7 +25,7 @@ export default defineConfig({
       browser: process.env.TARGET || "chrome",
       webExtConfig: {
         startUrl: ["about:debugging"],
-        target: ["firefox-desktop", "firefox-android", "chromium"],
+        target: process.env.TARGET === "firefox" ? ["firefox-desktop", "firefox-android"] : ["chromium"],
       },
     }),
   ],

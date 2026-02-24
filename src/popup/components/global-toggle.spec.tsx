@@ -3,7 +3,7 @@ import { GlobalToggle } from "./global-toggle";
 import { useGlobalPermissions } from "../hooks/use-global-permissions";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-vi.mock("../../hooks/use-global-permissions");
+vi.mock("../hooks/use-global-permissions");
 
 describe("GlobalToggle", () => {
   it("should not render anything when global permission is granted", () => {

@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { ExtensionMessage, LockStatus, MessageType } from "../types";
+import { ExtensionMessage, LockStatus, MessageType, ErrorCode } from "../types";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";
@@ -56,7 +56,7 @@ export class BackgroundManager {
     }
   }
 
-  private async handleStatusUpdate(status: LockStatus, tabId?: number, error?: string) {
+  private async handleStatusUpdate(status: LockStatus, tabId?: number, error?: ErrorCode | string) {
     if (!tabId) return;
 
     if (status === "inactive") {
@@ -100,7 +100,7 @@ export class BackgroundManager {
       const tab = await browser.tabs.get(activeTabId);
       if (!tab.url?.startsWith("https://")) {
         this.isProcessing = false;
-        const error = "Wake Lock requires a secure (HTTPS) page";
+        const error = ErrorCode.NOT_SECURE;
         await this.sessionManager.set(activeTabId, "error", error);
         updateBadge(activeTabId, "error");
         return { status: "error", error };
@@ -191,13 +191,13 @@ export class BackgroundManager {
           try {
             await injectContentScript(tabId);
           } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : "Unknown error";
+            const message = e instanceof Error ? e.message : ErrorCode.UNKNOWN;
             await this.sessionManager.set(tabId, "error", message);
             updateBadge(tabId, "error");
           }
         } else {
           // Permission revoked - show error
-          await this.sessionManager.set(tabId, "error", "Permission revoked");
+          await this.sessionManager.set(tabId, "error", ErrorCode.PERMISSION_REQUIRED);
           updateBadge(tabId, "error");
         }
       }

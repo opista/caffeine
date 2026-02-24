@@ -5,11 +5,12 @@ import { useActiveTab } from "../hooks/use-active-tab";
 import { usePlatform } from "../hooks/use-platform";
 import { useWakeLock } from "../hooks/use-wake-lock";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { ErrorCode } from "../../types";
 
 // Mock hooks
-vi.mock("../../hooks/use-active-tab");
-vi.mock("../../hooks/use-platform");
-vi.mock("../../hooks/use-wake-lock");
+vi.mock("../hooks/use-active-tab");
+vi.mock("../hooks/use-platform");
+vi.mock("../hooks/use-wake-lock");
 
 describe("WakeToggle", () => {
   const mockToggleSession = vi.fn();
@@ -104,10 +105,14 @@ describe("WakeToggle", () => {
     const card = input.closest("label");
     expect(card?.className).toContain("opacity-60");
     expect(card?.className).toContain("cursor-not-allowed");
+
+    // Check that WakeError is surfaced
+    expect(screen.getByText("Secure Connection Required")).toBeDefined();
+    expect(screen.getByText("Wake Lock can only be active on secure HTTPS pages.")).toBeDefined();
   });
 
   it("renders error message when status is error", () => {
-    const errorMsg = "Battery saver mode enabled";
+    const errorMsg = ErrorCode.SYSTEM_BLOCKED;
     (useWakeLock as Mock).mockReturnValue({
       status: "error",
       errorMsg: errorMsg,
@@ -116,8 +121,8 @@ describe("WakeToggle", () => {
 
     render(<WakeToggle />);
 
-    expect(screen.getAllByText("System prevented Wake Lock").length).toBe(2);
-    expect(screen.getByText(errorMsg)).toBeTruthy();
+    expect(screen.getAllByText("System prevented Wake Lock").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Check your OS battery settings or power saving mode.").length).toBeGreaterThan(0);
 
     // Check "Fix Issue" button exists
     const fixButton = screen.getByRole("button", { name: /Fix Issue/i });
@@ -136,7 +141,7 @@ describe("WakeToggle", () => {
   it('calls browser.tabs.create when "Fix Issue" is clicked', () => {
     (useWakeLock as Mock).mockReturnValue({
       status: "error",
-      errorMsg: "Some error",
+      errorMsg: ErrorCode.SYSTEM_BLOCKED,
       toggleSession: mockToggleSession,
     });
 

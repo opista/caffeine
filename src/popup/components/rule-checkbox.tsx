@@ -14,7 +14,7 @@ export const RuleCheckbox = ({ title, description, checked, onClick, className }
     <label
       onClick={onClick}
       className={cn(
-        "group flex items-center justify-between p-4 cursor-pointer transition-all hover:bg-brand/5 has-[:checked]:bg-brand/10",
+        "group flex items-center justify-between p-4 cursor-pointer transition-all has-[:checked]:bg-brand/10",
         className,
       )}
     >
@@ -28,14 +28,14 @@ export const RuleCheckbox = ({ title, description, checked, onClick, className }
       </div>
       <div className="relative flex items-center shrink-0">
         <input className="sr-only" type="checkbox" checked={checked} readOnly />
-        <div className="w-5 h-5 rounded-[4px] border-2 bg-white border-slate-200 flex items-center justify-center transition-all group-has-[:checked]:border-brand group-has-[:checked]:bg-brand">
+        <div className="w-5 h-5 rounded-[4px] border-2 bg-white border-slate-200 flex items-center justify-center transition-all group-hover:border-slate-300 group-hover:bg-slate-300 group-has-[:checked]:border-brand group-has-[:checked]:bg-brand">
           <IconCheck
             stroke={3}
             className={cn(
-              "w-3.5 h-3.5 transition-all text-brand",
-              checked
-                ? "scale-100 opacity-100 text-white"
-                : "scale-50 opacity-0 group-hover:scale-100 group-hover:opacity-30",
+              "w-3.5 h-3.5 transition-all text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100",
+              {
+                "scale-100 opacity-100": checked,
+              },
             )}
           />
         </div>

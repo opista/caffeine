@@ -1,4 +1,4 @@
-import { ExtensionMessage, MessageType } from "../types";
+import { ExtensionMessage, MessageType, ErrorCode } from "../types";
 import browser from "webextension-polyfill";
 import { showToast } from "./show-toast";
 
@@ -35,7 +35,7 @@ export class WakeLockManager {
 
   public async start() {
     if (!this.isSupported) {
-      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: "Wake Lock API not supported" });
+      this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: ErrorCode.NOT_SUPPORTED });
       return;
     }
 
@@ -67,7 +67,7 @@ export class WakeLockManager {
       this.sendMessage({
         type: MessageType.STATUS_UPDATE,
         status: "error",
-        error: "Wake Lock requires a secure (HTTPS) connection",
+        error: ErrorCode.NOT_SECURE,
       });
       return;
     }
@@ -87,12 +87,20 @@ export class WakeLockManager {
       }
       const errorMsg =
         errorName === "NotAllowedError"
-          ? "System blocked wake lock (check Battery Saver)"
+          ? ErrorCode.SYSTEM_BLOCKED
           : errorName === "NotSupportedError"
-            ? "Device does not support wake lock"
-            : "Unknown error";
+            ? ErrorCode.NOT_SUPPORTED
+            : errorName || ErrorCode.UNKNOWN;
       this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: errorMsg });
-      if (this.isAndroid) showToast("⚠️ " + errorMsg, "error");
+      if (this.isAndroid) {
+        const toastMsg =
+          errorMsg === ErrorCode.SYSTEM_BLOCKED
+            ? "System blocked wake lock (check Battery Saver)"
+            : errorMsg === ErrorCode.NOT_SUPPORTED
+              ? "Device does not support wake lock"
+              : "Unknown error";
+        showToast("⚠️ " + toastMsg, "error");
+      }
     }
   }
 

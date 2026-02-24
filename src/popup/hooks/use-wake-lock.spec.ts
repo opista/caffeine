@@ -6,7 +6,7 @@ import { renderHook } from "@testing-library/react";
 import { act } from "react";
 import { MessageType } from "../../types";
 
-vi.mock("../pages/utils/send-extension-message");
+vi.mock("../utils/send-extension-message");
 
 const mockBrowser = vi.mocked(browser, true);
 
@@ -116,9 +116,11 @@ describe("useWakeLock", () => {
   });
 
   it("should handle error during toggle session", async () => {
-    mockSendExtensionMessage
-      .mockResolvedValueOnce({ status: "active" }) // For initial GET_STATUS
-      .mockResolvedValueOnce({ status: "error", error: "Test error message" }); // For TOGGLE_SESSION
+    mockSendExtensionMessage.mockClear();
+    mockSendExtensionMessage.mockImplementation(async (msg: any) => {
+      if (msg.type === MessageType.GET_STATUS) return { status: "active" };
+      if (msg.type === MessageType.TOGGLE_SESSION) return { status: "error", error: "Test error message" };
+    });
 
     const { result } = renderHook(() => useWakeLock(false));
 

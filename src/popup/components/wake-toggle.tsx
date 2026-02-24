@@ -1,10 +1,11 @@
-import browser from "webextension-polyfill";
 import { cn } from "../utils/cn";
+import { ErrorCode } from "../../types";
 import { useWakeLock } from "../hooks/use-wake-lock";
 import { useActiveTab } from "../hooks/use-active-tab";
 import { usePlatform } from "../hooks/use-platform";
-import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconEyeFilled } from "@tabler/icons-react";
+import { IconEyeClosed, IconEyeFilled } from "@tabler/icons-react";
 import { Card } from "./card";
+import { WakeError } from "./wake-error";
 
 const textMap = {
   active: {
@@ -20,8 +21,8 @@ const textMap = {
     description: "Please wait...",
   },
   error: {
-    title: "System prevented Wake Lock",
-    description: "Check your OS battery settings or power saving mode.",
+    title: "Wake Lock Error",
+    description: "Failed to activate target",
   },
 };
 
@@ -37,16 +38,19 @@ export const WakeToggle = () => {
   const text = textMap[status];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <Card
         as="label"
         htmlFor="main-toggle"
-        className={cn("p-8 items-center gap-4 text-center transition-all duration-300 relative select-none outline-0", {
-          "shadow-brand/10 cursor-pointer animate-glow outline-6 -outline-offset-6 outline-brand": isActive,
-          "shadow-slate-200/50 border border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
-          "shadow-amber-200/50 cursor-not-allowed outline-6 -outline-offset-6 outline-amber-200": isPending,
-          "opacity-60 cursor-not-allowed grayscale bg-gray-50 border border-gray-100": !isSupportedUrl,
-        })}
+        className={cn(
+          "p-8 items-center gap-4 text-center transition-all duration-300 relative select-none outline-0 group",
+          {
+            "shadow-brand/10 cursor-pointer animate-glow outline-6 -outline-offset-6 outline-brand": isActive,
+            "shadow-slate-200/50 border border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
+            "shadow-amber-200/50 cursor-not-allowed outline-6 -outline-offset-6 outline-amber-200": isPending,
+            "opacity-60 cursor-not-allowed grayscale bg-gray-50 border border-gray-100": !isSupportedUrl,
+          },
+        )}
       >
         <span className="sr-only">{isActive ? "Deactivate wake lock" : "Activate wake lock"}</span>
         <div className="relative w-28 h-14">
@@ -61,10 +65,10 @@ export const WakeToggle = () => {
             role="switch"
           />
           <div
-            className={cn("block w-full h-full rounded-full transition-colors duration-300 peer-checked:bg-brand", {
-              "bg-slate-200": !isActive,
-              "bg-brand": isActive,
-            })}
+            className={cn(
+              "block w-full h-full rounded-full transition-colors duration-300 bg-slate-200 group-hover:bg-slate-300 peer-checked:bg-brand",
+              { "group-hover:bg-slate-200": !isSupportedUrl },
+            )}
           ></div>
           <div className="absolute top-1 left-1 w-12 h-12 bg-white rounded-full shadow-lg transition-transform duration-300 pointer-events-none flex items-center justify-center peer-checked:translate-x-14">
             {isActive ? (
@@ -87,29 +91,11 @@ export const WakeToggle = () => {
         </div>
       </Card>
 
-      {isError && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-3 items-start">
-          <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-            <IconAlertCircle size={18} className="text-red-600" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-red-900 leading-none mb-1">System prevented Wake Lock</h3>
-            <p className="text-[11px] text-red-700 leading-tight">
-              {errorMsg || "Check your OS battery settings or power saving mode."}
-            </p>
-            <button
-              onClick={() =>
-                browser.tabs.create({
-                  url: "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API",
-                })
-              }
-              className="mt-2 text-xs font-bold text-red-600 flex items-center gap-1 hover:underline"
-            >
-              Fix Issue <IconArrowRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}
+      {isError ? (
+        <WakeError errorMsg={errorMsg} />
+      ) : !isSupportedUrl ? (
+        <WakeError errorMsg={ErrorCode.NOT_SECURE} />
+      ) : null}
     </div>
   );
 };

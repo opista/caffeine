@@ -2,6 +2,14 @@ export type LockStatus = "active" | "inactive" | "error" | "pending";
 
 export type RuleType = "page" | "domain";
 
+export enum ErrorCode {
+  PERMISSION_REQUIRED = "PERMISSION_REQUIRED",
+  NOT_SECURE = "NOT_SECURE",
+  NOT_SUPPORTED = "NOT_SUPPORTED",
+  SYSTEM_BLOCKED = "SYSTEM_BLOCKED",
+  UNKNOWN = "UNKNOWN",
+}
+
 export interface RuleState {
   hasPageRule: boolean;
   hasDomainRule: boolean;
@@ -24,7 +32,7 @@ export enum MessageType {
 export type ExtensionMessage =
   | { type: MessageType.TOGGLE_SESSION }
   | { type: MessageType.GET_STATUS }
-  | { type: MessageType.STATUS_UPDATE; status: LockStatus; error?: string }
+  | { type: MessageType.STATUS_UPDATE; status: LockStatus; error?: ErrorCode | string }
   | { type: MessageType.GET_PLATFORM_INFO }
   | { type: MessageType.ACQUIRE_LOCK }
   | { type: MessageType.RELEASE_LOCK }
@@ -38,8 +46,8 @@ export interface RuleForTabResponse {
 }
 
 export interface MessageResponses {
-  [MessageType.TOGGLE_SESSION]: { status: LockStatus; error?: string };
-  [MessageType.GET_STATUS]: { status: LockStatus; error?: string };
+  [MessageType.TOGGLE_SESSION]: { status: LockStatus; error?: ErrorCode | string };
+  [MessageType.GET_STATUS]: { status: LockStatus; error?: ErrorCode | string };
   [MessageType.STATUS_UPDATE]: void;
   [MessageType.GET_PLATFORM_INFO]: { os: string | null };
   [MessageType.ACQUIRE_LOCK]: void;
