@@ -1,4 +1,3 @@
-import browser from "webextension-polyfill";
 import { ErrorCode } from "../../types";
 import { ErrorAlert } from "./error-alert";
 
@@ -6,21 +5,20 @@ type WakeErrorProps = {
   errorMsg: string | null;
 };
 
-const errorMap: Record<string, { title: string; description: string; showFixButton: boolean }> = {
+const errorMap: Record<string, { title: string; description: string }> = {
   [ErrorCode.SYSTEM_BLOCKED]: {
-    title: "System prevented Wake Lock",
-    description: "Check your OS battery settings or power saving mode.",
-    showFixButton: true,
+    title: "Blocked by device settings",
+    description:
+      "Your phone's Battery Saver or Low Power Mode is preventing the screen from staying on. Please disable it and try again.",
   },
   [ErrorCode.NOT_SECURE]: {
-    title: "Secure Connection Required",
-    description: "Wake Lock can only be active on secure HTTPS pages.",
-    showFixButton: false,
+    title: "Secure connection required",
+    description:
+      "For security, your browser only allows the screen to stay awake on secure websites (URLs starting with https://).",
   },
   [ErrorCode.NOT_SUPPORTED]: {
-    title: "Browser Not Supported",
-    description: "Your browser doesn't support the Wake Lock API.",
-    showFixButton: false,
+    title: "Not supported here",
+    description: "Your current browser or device does not support the feature required to keep the screen on.",
   },
 };
 
@@ -33,20 +31,5 @@ export const WakeError = ({ errorMsg }: WakeErrorProps) => {
     showFixButton: false,
   };
 
-  return (
-    <ErrorAlert
-      title={errorDetails.title}
-      description={errorDetails.description}
-      buttonText={errorDetails.showFixButton ? "Fix Issue" : undefined}
-      onButtonClick={
-        errorDetails.showFixButton
-          ? () => {
-              browser.tabs.create({
-                url: "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API",
-              });
-            }
-          : undefined
-      }
-    />
-  );
+  return <ErrorAlert title={errorDetails.title} description={errorDetails.description} />;
 };

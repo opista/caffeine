@@ -13,8 +13,8 @@ export const PermissionWarning = ({ hasRule, url }: PermissionWarningProps) => {
 
   return (
     <ErrorAlert
-      title="Permission required"
-      description="Please enable site access to allow this rule to work."
+      title="Access needed"
+      description="Please allow the extension to read this site so it knows when to keep the screen on"
       buttonText="Grant Permission"
       onButtonClick={() => url && requestScopedPermission(url.href)}
     />

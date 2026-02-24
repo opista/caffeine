@@ -16,7 +16,7 @@ export const ErrorAlert = ({ title, description, buttonText, onButtonClick }: Er
       </div>
       <div className="flex-1">
         <h3 className="text-sm font-bold text-red-900 leading-none mb-1">{title}</h3>
-        <p className="text-[11px] text-red-700 leading-tight">{description}</p>
+        <p className="text-xs text-red-700 leading-tight">{description}</p>
         {buttonText && onButtonClick && (
           <button
             onClick={onButtonClick}

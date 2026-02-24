@@ -11,8 +11,9 @@ export const GlobalToggle = () => {
     <Card className="bg-slate-900 p-5">
       <div className="flex items-start gap-3 mb-4">
         <IconShieldCheck size={20} className="text-brand shrink-0" />
-        <p className="text-[11px] text-slate-400 leading-normal font-medium">
-          Advanced permissions are required for the extension to function on every site automatically.
+        <p className="text-xs text-slate-400 leading-normal font-medium">
+          Tired of permission popups? Grant access to all websites once, and your 'Always Keep Awake' rules will work
+          instantly without asking every time.
         </p>
       </div>
       <button
@@ -20,7 +21,7 @@ export const GlobalToggle = () => {
         className="cursor-pointer w-full bg-brand hover:bg-brand/90 text-white py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-brand/30 transition-all flex items-center justify-center gap-2"
       >
         <IconLockAccess size={16} />
-        Enable Access to All Websites
+        Allow on all websites
       </button>
     </Card>
   );

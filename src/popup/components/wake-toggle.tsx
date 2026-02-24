@@ -9,20 +9,20 @@ import { WakeError } from "./wake-error";
 
 const textMap = {
   active: {
-    title: "Wake Lock is Active",
-    description: "Preventing sleep automatically",
+    title: "Screen staying awake",
+    description: "This tab will not go to sleep.",
   },
   inactive: {
-    title: "Wake Lock is Inactive",
-    description: "Tap to keep screen awake",
+    title: "Screen can sleep",
+    description: "Tap to keep the screen on.",
   },
   pending: {
     title: "Activating...",
-    description: "Please wait...",
+    description: "Just a moment...",
   },
   error: {
-    title: "Wake Lock Error",
-    description: "Failed to activate target",
+    title: "Couldn't keep screen on",
+    description: "Tap for more details.",
   },
 };
 
@@ -86,8 +86,8 @@ export const WakeToggle = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-bold transition-colors">{text.title}</h2>
-          <p className="text-sm text-slate-500 font-medium transition-colors">{text.description}</p>
+          <h2 className="text-xl font-bold transition-colors">{text.title}</h2>
+          <p className="text-base text-slate-500 font-medium transition-colors">{text.description}</p>
         </div>
       </Card>
 

@@ -19,10 +19,10 @@ export const RuleCheckbox = ({ title, description, checked, onClick, className }
       )}
     >
       <div className="flex flex-col min-w-0 pr-4">
-        <span className="text-[13px] font-bold text-slate-700 transition-colors group-has-[:checked]:text-brand">
+        <span className="text-sm font-bold text-slate-700 transition-colors group-has-[:checked]:text-brand">
           {title}
         </span>
-        <span className="text-[10px] text-slate-400 font-medium truncate" title={description}>
+        <span className="text-xs text-slate-400 font-medium truncate" title={description}>
           {description}
         </span>
       </div>

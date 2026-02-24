@@ -20,6 +20,27 @@
 }
 
 @layer base {
+  html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html.is-android {
+    font-size: 130%;
+  }
+
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
     @apply font-sans antialiased text-slate-800 bg-slate-50;
   }
