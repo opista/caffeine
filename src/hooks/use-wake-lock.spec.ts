@@ -8,12 +8,11 @@ import { sendExtensionMessage } from '../pages/utils/send-extension-message';
 // Mock browser
 const mockAddListener = vi.fn();
 const mockRemoveListener = vi.fn();
-const mockSendMessage = vi.fn(); // Keep this mock for webextension-polyfill internals if needed, though we mock sendExtensionMessage directly now.
 
 vi.mock('webextension-polyfill', () => ({
   default: {
     runtime: {
-      sendMessage: (...args: any[]) => mockSendMessage(...args),
+      sendMessage: vi.fn(), // Mocked but unused as we mock sendExtensionMessage directly
       onMessage: {
         addListener: (cb: any) => mockAddListener(cb),
         removeListener: (cb: any) => mockRemoveListener(cb),
