@@ -13,7 +13,7 @@
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "optional_permissions": ["*://*/*"],
   "action": {
-    "default_popup": "src/popup.html",
+    "default_popup": "src/popup/index.html",
     "default_title": "Caffeine"
   },
   "background": {
