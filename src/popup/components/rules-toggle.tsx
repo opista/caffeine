@@ -18,7 +18,7 @@ export const RulesToggle = () => {
   if (!isSupportedUrl) return null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <PermissionWarning hasRule={!!ruleState} url={url} />
 
       <Card>

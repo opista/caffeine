@@ -24,6 +24,10 @@ const textMap = {
     title: "Couldn't keep screen on",
     description: "Tap for more details.",
   },
+  unsupported: {
+    title: "Caffeine unavailable",
+    description: "This page is not supported.",
+  },
 };
 
 export const WakeToggle = () => {
@@ -35,10 +39,10 @@ export const WakeToggle = () => {
   const isPending = status === "pending";
   const isError = status === "error";
 
-  const text = textMap[status];
+  const text = !isSupportedUrl ? textMap.unsupported : textMap[status];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <Card
         as="label"
         htmlFor="main-toggle"
@@ -48,11 +52,13 @@ export const WakeToggle = () => {
             "shadow-brand/10 cursor-pointer animate-glow outline-6 -outline-offset-6 outline-brand": isActive,
             "shadow-slate-200/50 border border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
             "shadow-amber-200/50 cursor-not-allowed outline-6 -outline-offset-6 outline-amber-200": isPending,
-            "opacity-60 cursor-not-allowed grayscale bg-gray-50 border border-gray-100": !isSupportedUrl,
+            "opacity-75 cursor-not-allowed border border-gray-100": !isSupportedUrl,
           },
         )}
       >
-        <span className="sr-only">{isActive ? "Deactivate wake lock" : "Activate wake lock"}</span>
+        <span className="sr-only">
+          {!isSupportedUrl ? "Wake lock unavailable" : isActive ? "Deactivate wake lock" : "Activate wake lock"}
+        </span>
         <div className="relative w-28 h-14">
           <input
             checked={isActive}
@@ -72,10 +78,10 @@ export const WakeToggle = () => {
           ></div>
           <div className="absolute top-1 left-1 w-12 h-12 bg-white rounded-full shadow-lg transition-transform duration-300 pointer-events-none flex items-center justify-center peer-checked:translate-x-14">
             {isActive ? (
-              <IconEyeFilled size={24} stroke={2.5} className="text-brand" />
+              <IconEyeFilled size="1.5rem" stroke={2.5} className="text-brand" />
             ) : (
               <IconEyeClosed
-                size={24}
+                size="1.5rem"
                 stroke={2.5}
                 className={cn("transition-colors duration-300", {
                   "text-slate-400": !isPending,

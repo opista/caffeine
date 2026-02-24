@@ -14,12 +14,7 @@ export default function Popup() {
   }, [isAndroid]);
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-6 p-6 mx-auto min-h-screen",
-        isAndroid ? "w-full" : "w-[360px] sm:min-h-[unset]",
-      )}
-    >
+    <div className={cn("flex flex-col gap-4 p-4 mx-auto", isAndroid ? "w-full" : "w-[360px]")}>
       <header className="flex justify-between items-center shrink-0">
         <div className="flex gap-2.5">
           <div className="size-12 shrink-0 aspect-square bg-brand rounded-2xl flex items-center justify-center shadow-lg shadow-brand/20">
@@ -32,14 +27,12 @@ export default function Popup() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col gap-6">
+      <main className="flex-1 flex flex-col gap-4">
         <WakeToggle />
         <RulesToggle />
       </main>
 
-      <footer className="mt-auto shrink-0">
-        <GlobalToggle />
-      </footer>
+      <GlobalToggle />
     </div>
   );
 }

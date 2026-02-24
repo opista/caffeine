@@ -30,9 +30,10 @@ export const RuleCheckbox = ({ title, description, checked, onClick, className }
         <input className="sr-only" type="checkbox" checked={checked} readOnly />
         <div className="w-5 h-5 rounded-[4px] border-2 bg-white border-slate-200 flex items-center justify-center transition-all group-hover:border-slate-300 group-hover:bg-slate-300 group-has-[:checked]:border-brand group-has-[:checked]:bg-brand">
           <IconCheck
+            size="0.875rem"
             stroke={3}
             className={cn(
-              "w-3.5 h-3.5 transition-all text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100",
+              "transition-all text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100",
               {
                 "scale-100 opacity-100": checked,
               },
