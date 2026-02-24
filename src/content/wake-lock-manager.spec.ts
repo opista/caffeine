@@ -1,6 +1,7 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import browser from "webextension-polyfill";
-import { WakeLockManager } from "./wake-lock-manager";
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import browser from 'webextension-polyfill';
+import { WakeLockManager } from './wake-lock-manager';
+import { MessageType } from '../types';
 
 const mockBrowser = vi.mocked(browser, true);
 const mockSender = {} as browser.Runtime.MessageSender;
@@ -45,12 +46,12 @@ describe("WakeLockManager", () => {
       },
     });
 
-    mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
-      if (msg.type === "GET_PLATFORM_INFO") {
-        return { os: "linux" };
-      }
-      return undefined;
-    });
+        mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
+            if (msg.type === MessageType.GET_PLATFORM_INFO) {
+                return { os: 'linux' };
+            }
+            return undefined;
+        });
 
     wakeLockManager = new WakeLockManager();
   });
@@ -64,12 +65,12 @@ describe("WakeLockManager", () => {
 
     await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
-    expect(requestMock).toHaveBeenCalledWith("screen");
-    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
-      status: "active",
+        expect(requestMock).toHaveBeenCalledWith('screen');
+        expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+            type: MessageType.STATUS_UPDATE,
+            status: 'active',
+        });
     });
-  });
 
   it("should release wake lock on stop", async () => {
     await wakeLockManager.start();
@@ -77,12 +78,12 @@ describe("WakeLockManager", () => {
 
     await wakeLockManager.stop();
 
-    expect(releaseMock).toHaveBeenCalled();
-    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
-      status: "inactive",
+        expect(releaseMock).toHaveBeenCalled();
+        expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+            type: MessageType.STATUS_UPDATE,
+            status: 'inactive',
+        });
     });
-  });
 
   it("should handle visibility change to hidden", async () => {
     await wakeLockManager.start();
@@ -145,12 +146,12 @@ describe("WakeLockManager", () => {
 
     await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
-    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
-      status: "error",
-      error: "Wake Lock API not supported",
+        expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+            type: MessageType.STATUS_UPDATE,
+            status: 'error',
+            error: 'Wake Lock API not supported',
+        });
     });
-  });
 
   it("should handle wake lock request error", async () => {
     requestMock.mockRejectedValue({ name: "NotAllowedError", message: "Permission denied" });
@@ -159,24 +160,24 @@ describe("WakeLockManager", () => {
 
     await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
 
-    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
-      status: "error",
-      error: "System blocked wake lock (check Battery Saver)",
+        expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+            type: MessageType.STATUS_UPDATE,
+            status: 'error',
+            error: 'System blocked wake lock (check Battery Saver)',
+        });
     });
-  });
 
   it("should stop wake lock on RELEASE_LOCK message", async () => {
     await wakeLockManager.start();
     await vi.waitUntil(() => requestMock.mock.calls.length > 0);
 
-    const onMessageListener = mockBrowser.runtime.onMessage.addListener.mock.calls[0][0];
-    await onMessageListener({ type: "RELEASE_LOCK" }, mockSender, mockSendResponse);
+        const onMessageListener = mockBrowser.runtime.onMessage.addListener.mock.calls[0][0];
+        await onMessageListener({ type: MessageType.RELEASE_LOCK }, mockSender, mockSendResponse);
 
-    expect(releaseMock).toHaveBeenCalled();
-    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "STATUS_UPDATE",
-      status: "inactive",
+        expect(releaseMock).toHaveBeenCalled();
+        expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+            type: MessageType.STATUS_UPDATE,
+            status: 'inactive',
+        });
     });
-  });
 });

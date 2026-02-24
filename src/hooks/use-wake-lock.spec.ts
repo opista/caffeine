@@ -1,9 +1,28 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useWakeLock } from "./use-wake-lock";
-import { renderHook } from "../test/utils";
-import { act } from "react";
 import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 import browser from "webextension-polyfill";
+import { useWakeLock } from './use-wake-lock';
+import { renderHook } from '../test/utils';
+import { act } from 'react';
+import { MessageType } from '../types';
+
+// Mock browser
+const mockAddListener = vi.fn();
+const mockRemoveListener = vi.fn();
+const mockSendMessage = vi.fn();
+
+vi.mock('webextension-polyfill', () => ({
+  default: {
+    runtime: {
+      sendMessage: (...args: any[]) => mockSendMessage(...args),
+      onMessage: {
+        addListener: (cb: any) => mockAddListener(cb),
+        removeListener: (cb: any) => mockRemoveListener(cb),
+      },
+      getPlatformInfo: vi.fn(),
+    },
+  },
+}));
 
 vi.mock("../pages/utils/send-extension-message");
 
@@ -34,7 +53,7 @@ describe("useWakeLock", () => {
     await vi.waitFor(() => {
       expect(result.current.status).toBe("active");
     });
-    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: "GET_STATUS" });
+    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: MessageType.GET_STATUS });
   });
 
   it("should update status when receiving STATUS_UPDATE message", async () => {
@@ -47,7 +66,7 @@ describe("useWakeLock", () => {
 
     act(() => {
       if (messageCallback) {
-        messageCallback({ type: "STATUS_UPDATE", status: "pending" }, mockSender, mockSendResponse);
+        messageCallback({ type: MessageType.STATUS_UPDATE, status: "pending" }, mockSender, mockSendResponse);
       }
     });
 
@@ -73,8 +92,8 @@ describe("useWakeLock", () => {
       await result.current.toggleSession();
     });
 
-    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: "TOGGLE_SESSION" });
-    expect(result.current.status).toBe("inactive");
+    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: MessageType.TOGGLE_SESSION });
+    expect(result.current.status).toBe('inactive');
   });
 
   it("should close window on android when pending", async () => {

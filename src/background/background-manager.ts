@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { ExtensionMessage, LockStatus } from "../types";
+import { ExtensionMessage, LockStatus, MessageType } from "../types";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";
@@ -8,53 +8,68 @@ import { getOperatingSystem } from "./get-operating-system";
 import { getRootDomain } from "../utils/get-root-domain";
 import { createDomainOriginPermissionString } from "./create-domain-origin-permission-string";
 
-export class BackgroundManager {
-  private isInitialized = false;
-  private isProcessing = false;
-  private lastActiveWebTabId: number | undefined;
+type MessageHandler = (message: ExtensionMessage, senderTabId?: number) => Promise<any> | any;
 
-  constructor(
-    private sessionManager: SessionManager = new SessionManager(),
-    private ruleManager: RuleManager = new RuleManager(),
-  ) {
-    this.handleMessage = this.handleMessage.bind(this);
-    this.handleTabRemoved = this.handleTabRemoved.bind(this);
-    this.handleTabUpdated = this.handleTabUpdated.bind(this);
-    this.handleTabActivated = this.handleTabActivated.bind(this);
-  }
+export class BackgroundManager {
+    private isInitialized = false;
+    private isProcessing = false;
+    private lastActiveWebTabId: number | undefined;
+    private messageHandlers: Partial<Record<MessageType, MessageHandler>> = {};
+
+    constructor(
+        private sessionManager: SessionManager = new SessionManager(),
+        private ruleManager: RuleManager = new RuleManager(),
+    ) {
+        this.handleMessage = this.handleMessage.bind(this);
+        this.handleTabRemoved = this.handleTabRemoved.bind(this);
+        this.handleTabUpdated = this.handleTabUpdated.bind(this);
+        this.handleTabActivated = this.handleTabActivated.bind(this);
+        this.initializeMessageHandlers();
+    }
 
   public init() {
     if (this.isInitialized) return;
     this.isInitialized = true;
 
-    browser.runtime.onMessage.addListener(this.handleMessage);
-    browser.tabs.onRemoved.addListener(this.handleTabRemoved);
-    browser.tabs.onUpdated.addListener(this.handleTabUpdated);
-    browser.tabs.onActivated.addListener(this.handleTabActivated);
-  }
-
-  private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
-    const senderTabId = sender.tab?.id;
-
-    switch (message.type) {
-      case "STATUS_UPDATE":
-        return this.handleStatusUpdate(message.status, senderTabId, message.error);
-      case "GET_STATUS":
-        return this.handleGetStatus();
-      case "TOGGLE_SESSION":
-        return this.handleToggleSession();
-      case "GET_PLATFORM_INFO":
-        return this.handleGetPlatformInfo();
-      case "ADD_RULE":
-        return this.ruleManager.addRule(message.ruleType, message.url);
-      case "REMOVE_RULE":
-        return this.ruleManager.removeRule(message.ruleType, message.url);
-      case "GET_RULE_FOR_TAB":
-        return this.handleGetRuleForTab();
-      case "GET_PERMISSION_FOR_TAB":
-        return this.handleGetPermissionForTab();
+        browser.runtime.onMessage.addListener(this.handleMessage);
+        browser.tabs.onRemoved.addListener(this.handleTabRemoved);
+        browser.tabs.onUpdated.addListener(this.handleTabUpdated);
+        browser.tabs.onActivated.addListener(this.handleTabActivated);
     }
-  }
+
+    private initializeMessageHandlers() {
+        this.messageHandlers = {
+            [MessageType.STATUS_UPDATE]: (message, senderTabId) => {
+                if (message.type === MessageType.STATUS_UPDATE) {
+                    return this.handleStatusUpdate(message.status, senderTabId, message.error);
+                }
+            },
+            [MessageType.GET_STATUS]: () => this.handleGetStatus(),
+            [MessageType.TOGGLE_SESSION]: () => this.handleToggleSession(),
+            [MessageType.GET_PLATFORM_INFO]: () => this.handleGetPlatformInfo(),
+            [MessageType.ADD_RULE]: (message) => {
+                if (message.type === MessageType.ADD_RULE) {
+                    return this.ruleManager.addRule(message.ruleType, message.url);
+                }
+            },
+            [MessageType.REMOVE_RULE]: (message) => {
+                if (message.type === MessageType.REMOVE_RULE) {
+                    return this.ruleManager.removeRule(message.ruleType, message.url);
+                }
+            },
+            [MessageType.GET_RULE_FOR_TAB]: () => this.handleGetRuleForTab(),
+            [MessageType.GET_PERMISSION_FOR_TAB]: () => this.handleGetPermissionForTab(),
+        };
+    }
+
+    private handleMessage(message: ExtensionMessage, sender: browser.Runtime.MessageSender) {
+        const senderTabId = sender.tab?.id;
+        const handler = this.messageHandlers[message.type];
+
+        if (handler) {
+            return handler(message, senderTabId);
+        }
+    }
 
   private async handleStatusUpdate(status: LockStatus, tabId?: number, error?: string) {
     if (!tabId) return;
@@ -86,25 +101,25 @@ export class BackgroundManager {
 
     const { status: currentStatus } = await this.sessionManager.get(activeTabId);
 
-    if (currentStatus === "active") {
-      try {
-        await browser.tabs.sendMessage(activeTabId, { type: "RELEASE_LOCK" });
-      } catch {
-        await this.sessionManager.delete(activeTabId);
-        updateBadge(activeTabId, "inactive");
-      } finally {
-        this.isProcessing = false;
-      }
-      return { status: "inactive" };
-    } else {
-      const tab = await browser.tabs.get(activeTabId);
-      if (!tab.url?.startsWith("https://")) {
-        this.isProcessing = false;
-        const error = "Wake Lock requires a secure (HTTPS) page";
-        await this.sessionManager.set(activeTabId, "error", error);
-        updateBadge(activeTabId, "error");
-        return { status: "error", error };
-      }
+        if (currentStatus === "active") {
+            try {
+                await browser.tabs.sendMessage(activeTabId, { type: MessageType.RELEASE_LOCK });
+            } catch {
+                await this.sessionManager.delete(activeTabId);
+                updateBadge(activeTabId, "inactive");
+            } finally {
+                this.isProcessing = false;
+            }
+            return { status: "inactive" };
+        } else {
+            const tab = await browser.tabs.get(activeTabId);
+            if (!tab.url?.startsWith('https://')) {
+                this.isProcessing = false;
+                const error = "Wake Lock requires a secure (HTTPS) page";
+                await this.sessionManager.set(activeTabId, "error", error);
+                updateBadge(activeTabId, "error");
+                return { status: "error", error };
+            }
 
       try {
         await injectContentScript(activeTabId);

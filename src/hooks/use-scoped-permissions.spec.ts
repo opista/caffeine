@@ -3,6 +3,7 @@ import { renderHook } from "../test/utils";
 import { act } from "react";
 import { useScopedPermissions } from "./use-scoped-permissions";
 import browser from "webextension-polyfill";
+import { MessageType } from '../types';
 
 const mockBrowser = vi.mocked(browser, true);
 
@@ -25,7 +26,7 @@ describe("useScopedPermissions", () => {
     await vi.waitUntil(() => result.current.hasScopedPermission === true);
 
     expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      type: "GET_PERMISSION_FOR_TAB",
+      type: MessageType.GET_PERMISSION_FOR_TAB,
     });
   });
 

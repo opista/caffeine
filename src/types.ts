@@ -8,31 +8,44 @@ export interface RuleState {
   rootDomain: string;
 }
 
+export enum MessageType {
+  TOGGLE_SESSION = "TOGGLE_SESSION",
+  GET_STATUS = "GET_STATUS",
+  STATUS_UPDATE = "STATUS_UPDATE",
+  GET_PLATFORM_INFO = "GET_PLATFORM_INFO",
+  ACQUIRE_LOCK = "ACQUIRE_LOCK",
+  RELEASE_LOCK = "RELEASE_LOCK",
+  ADD_RULE = "ADD_RULE",
+  REMOVE_RULE = "REMOVE_RULE",
+  GET_RULE_FOR_TAB = "GET_RULE_FOR_TAB",
+  GET_PERMISSION_FOR_TAB = "GET_PERMISSION_FOR_TAB",
+}
+
 export type ExtensionMessage =
-  | { type: "TOGGLE_SESSION" }
-  | { type: "GET_STATUS" }
-  | { type: "STATUS_UPDATE"; status: LockStatus; error?: string }
-  | { type: "GET_PLATFORM_INFO" }
-  | { type: "ACQUIRE_LOCK" }
-  | { type: "RELEASE_LOCK" }
-  | { type: "ADD_RULE"; ruleType: RuleType; url: string }
-  | { type: "REMOVE_RULE"; ruleType: RuleType; url: string }
-  | { type: "GET_RULE_FOR_TAB" }
-  | { type: "GET_PERMISSION_FOR_TAB" };
+  | { type: MessageType.TOGGLE_SESSION }
+  | { type: MessageType.GET_STATUS }
+  | { type: MessageType.STATUS_UPDATE; status: LockStatus; error?: string }
+  | { type: MessageType.GET_PLATFORM_INFO }
+  | { type: MessageType.ACQUIRE_LOCK }
+  | { type: MessageType.RELEASE_LOCK }
+  | { type: MessageType.ADD_RULE; ruleType: RuleType; url: string }
+  | { type: MessageType.REMOVE_RULE; ruleType: RuleType; url: string }
+  | { type: MessageType.GET_RULE_FOR_TAB }
+  | { type: MessageType.GET_PERMISSION_FOR_TAB };
 
 export interface RuleForTabResponse {
   ruleState: RuleState | null;
 }
 
 export interface MessageResponses {
-  TOGGLE_SESSION: { status: LockStatus; error?: string };
-  GET_STATUS: { status: LockStatus; error?: string };
-  STATUS_UPDATE: void;
-  GET_PLATFORM_INFO: { os: string | null };
-  ACQUIRE_LOCK: void;
-  RELEASE_LOCK: void;
-  ADD_RULE: void;
-  REMOVE_RULE: void;
-  GET_RULE_FOR_TAB: RuleForTabResponse | null;
-  GET_PERMISSION_FOR_TAB: boolean | null;
+  [MessageType.TOGGLE_SESSION]: { status: LockStatus; error?: string };
+  [MessageType.GET_STATUS]: { status: LockStatus; error?: string };
+  [MessageType.STATUS_UPDATE]: void;
+  [MessageType.GET_PLATFORM_INFO]: { os: string | null };
+  [MessageType.ACQUIRE_LOCK]: void;
+  [MessageType.RELEASE_LOCK]: void;
+  [MessageType.ADD_RULE]: void;
+  [MessageType.REMOVE_RULE]: void;
+  [MessageType.GET_RULE_FOR_TAB]: RuleForTabResponse | null;
+  [MessageType.GET_PERMISSION_FOR_TAB]: boolean | null;
 }
