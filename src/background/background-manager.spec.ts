@@ -1,10 +1,11 @@
-import browser from "webextension-polyfill";
-import { vi, describe, it, expect, beforeEach, Mocked } from "vitest";
-import { BackgroundManager } from "./background-manager";
-import { SessionManager } from "./session-manager";
-import { RuleManager } from "./rules/rule-manager";
-import { updateBadge } from "./update-badge";
-import { injectContentScript } from "./inject-content-script";
+import { vi, describe, it, expect, beforeEach, Mocked } from 'vitest';
+import browser from 'webextension-polyfill';
+import { BackgroundManager } from './background-manager';
+import { SessionManager } from './session-manager';
+import { RuleManager } from './rules/rule-manager';
+import { updateBadge } from './update-badge';
+import { injectContentScript } from './inject-content-script';
+import { getOperatingSystem } from './get-operating-system';
 import { MessageType } from '../types';
 
 vi.mock("./get-operating-system");
@@ -12,9 +13,11 @@ vi.mock('./session-manager');
 vi.mock('./rules/rule-manager');
 vi.mock('./update-badge');
 vi.mock('./inject-content-script');
+vi.mock('./get-operating-system');
 
 const mockBrowser = vi.mocked(browser, true);
 const mockInjectContentScript = vi.mocked(injectContentScript);
+const mockGetOperatingSystem = vi.mocked(getOperatingSystem);
 
 describe("BackgroundManager", () => {
   let manager: BackgroundManager;
@@ -26,12 +29,15 @@ const mockBrowser = vi.mocked(browser, true);
   const mockMessageSender = { tab: { id: mockTabId } } as browser.Runtime.MessageSender;
   const mockSendResponse = vi.fn();
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockBrowser.tabs.query.mockResolvedValue([mockTab]);
-    mockBrowser.tabs.get.mockResolvedValue(mockTab);
-    mockBrowser.tabs.sendMessage.mockResolvedValue(undefined);
-    mockBrowser.permissions.contains.mockResolvedValue(true);
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        mockGetOperatingSystem.mockResolvedValue('linux');
+
+        mockBrowser.tabs.query.mockResolvedValue([mockTab]);
+        mockBrowser.tabs.get.mockResolvedValue(mockTab);
+        mockBrowser.tabs.sendMessage.mockResolvedValue(undefined);
+        mockBrowser.permissions.contains.mockResolvedValue(true);
 
     mockBrowser.tabs.onActivated = { addListener: vi.fn() } as any;
     mockBrowser.tabs.onUpdated = { addListener: vi.fn() } as any;
