@@ -23,7 +23,7 @@ export const RulesToggle = () => {
 
       <Card>
         <RuleCheckbox
-          title="Keep awake for this URL"
+          title="Always keep awake for this URL"
           description={formatPageUrl(url) || "This page"}
           checked={ruleState?.hasPageRule ?? false}
           className="border-b border-slate-50"
@@ -38,7 +38,7 @@ export const RulesToggle = () => {
         />
 
         <RuleCheckbox
-          title="Keep awake for this website"
+          title="Always keep awake for this website"
           description={rootDomain || "This domain"}
           checked={ruleState?.hasDomainRule ?? false}
           onClick={() => {

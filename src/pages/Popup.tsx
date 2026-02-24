@@ -5,7 +5,7 @@ import { GlobalToggle } from "./components/global-toggle";
 
 export default function Popup() {
   return (
-    <div className="w-[360px] flex flex-col gap-6 bg-bg-soft p-6">
+    <div className="w-[360px] flex flex-col gap-6 p-6">
       <header className="flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center shadow-lg shadow-brand/20">

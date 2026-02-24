@@ -3,8 +3,27 @@ import { cn } from "../utils/cn";
 import { useWakeLock } from "../../hooks/use-wake-lock";
 import { useActiveTab } from "../../hooks/use-active-tab";
 import { usePlatform } from "../../hooks/use-platform";
-import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconBoltFilled } from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowRight, IconEyeClosed, IconEyeFilled } from "@tabler/icons-react";
 import { Card } from "./card";
+
+const textMap = {
+  active: {
+    title: "Wake Lock is Active",
+    description: "Preventing sleep automatically",
+  },
+  inactive: {
+    title: "Wake Lock is Inactive",
+    description: "Tap to keep screen awake",
+  },
+  pending: {
+    title: "Activating...",
+    description: "Please wait...",
+  },
+  error: {
+    title: "System prevented Wake Lock",
+    description: "Check your OS battery settings or power saving mode.",
+  },
+};
 
 export const WakeToggle = () => {
   const { isSupportedUrl } = useActiveTab();
@@ -15,16 +34,18 @@ export const WakeToggle = () => {
   const isPending = status === "pending";
   const isError = status === "error";
 
+  const text = textMap[status];
+
   return (
     <div className="flex flex-col gap-4">
       <Card
         as="label"
         htmlFor="main-toggle"
-        className={cn("p-8 items-center gap-4 text-center border transition-all duration-300 relative select-none", {
-          "shadow-brand/10 border-brand/20 cursor-pointer": isActive,
-          "shadow-slate-200/50 border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
-          "shadow-amber-200/50 border-amber-200 cursor-not-allowed": isPending,
-          "opacity-60 cursor-not-allowed grayscale": !isSupportedUrl,
+        className={cn("p-8 items-center gap-4 text-center transition-all duration-300 relative select-none outline-0", {
+          "shadow-brand/10 cursor-pointer animate-glow outline-6 -outline-offset-6 outline-brand": isActive,
+          "shadow-slate-200/50 border border-slate-100 cursor-pointer": !isActive && !isPending && isSupportedUrl,
+          "shadow-amber-200/50 cursor-not-allowed outline-6 -outline-offset-6 outline-amber-200": isPending,
+          "opacity-60 cursor-not-allowed grayscale bg-gray-50 border border-gray-100": !isSupportedUrl,
         })}
       >
         <span className="sr-only">{isActive ? "Deactivate wake lock" : "Activate wake lock"}</span>
@@ -47,7 +68,7 @@ export const WakeToggle = () => {
           ></div>
           <div className="absolute top-1 left-1 w-12 h-12 bg-white rounded-full shadow-lg transition-transform duration-300 pointer-events-none flex items-center justify-center peer-checked:translate-x-14">
             {isActive ? (
-              <IconBoltFilled size={24} stroke={2.5} className="text-brand" />
+              <IconEyeFilled size={24} stroke={2.5} className="text-brand" />
             ) : (
               <IconEyeClosed
                 size={24}
@@ -61,12 +82,8 @@ export const WakeToggle = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-bold transition-colors">
-            {isActive ? "Wake Lock is Active" : isPending ? "Activating..." : "Wake Lock is Inactive"}
-          </h2>
-          <p className="text-sm text-slate-500 font-medium transition-colors">
-            {isActive ? "Preventing sleep automatically" : "Tap to keep screen awake"}
-          </p>
+          <h2 className="text-lg font-bold transition-colors">{text.title}</h2>
+          <p className="text-sm text-slate-500 font-medium transition-colors">{text.description}</p>
         </div>
       </Card>
 

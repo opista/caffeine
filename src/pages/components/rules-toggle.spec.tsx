@@ -84,8 +84,8 @@ describe("RulesToggle", () => {
   it("should render checkboxes with correct descriptions", () => {
     render(<RulesToggle />);
 
-    const pageCheckbox = screen.getByTestId("checkbox-Keep awake for this URL");
-    const domainCheckbox = screen.getByTestId("checkbox-Keep awake for this website");
+    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
+    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
 
     expect(pageCheckbox).toBeTruthy();
     expect(pageCheckbox.getAttribute("data-description")).toBe("example.com/path");
@@ -103,8 +103,8 @@ describe("RulesToggle", () => {
 
     render(<RulesToggle />);
 
-    const pageCheckbox = screen.getByTestId("checkbox-Keep awake for this URL");
-    const domainCheckbox = screen.getByTestId("checkbox-Keep awake for this website");
+    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
+    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
 
     expect(pageCheckbox.getAttribute("data-checked")).toBe("true");
     expect(domainCheckbox.getAttribute("data-checked")).toBe("false");
@@ -112,7 +112,7 @@ describe("RulesToggle", () => {
 
   it("should call togglePageRule when page rule checkbox is clicked", () => {
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Keep awake for this URL");
+    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
 
     fireEvent.click(pageCheckbox);
 
@@ -121,7 +121,7 @@ describe("RulesToggle", () => {
 
   it("should call toggleDomainRule when domain rule checkbox is clicked", () => {
     render(<RulesToggle />);
-    const domainCheckbox = screen.getByTestId("checkbox-Keep awake for this website");
+    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
 
     fireEvent.click(domainCheckbox);
 
@@ -140,7 +140,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Keep awake for this URL");
+    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
 
     fireEvent.click(pageCheckbox);
 
@@ -160,7 +160,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Keep awake for this URL");
+    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
 
     fireEvent.click(pageCheckbox);
 
@@ -180,7 +180,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const pageCheckbox = screen.getByTestId("checkbox-Keep awake for this URL");
+    const pageCheckbox = screen.getByTestId("checkbox-Always keep awake for this URL");
 
     fireEvent.click(pageCheckbox);
 
@@ -201,7 +201,7 @@ describe("RulesToggle", () => {
     });
 
     render(<RulesToggle />);
-    const domainCheckbox = screen.getByTestId("checkbox-Keep awake for this website");
+    const domainCheckbox = screen.getByTestId("checkbox-Always keep awake for this website");
 
     fireEvent.click(domainCheckbox);
 

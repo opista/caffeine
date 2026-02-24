@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #6366f1;
-  --color-brand-light: #eef2ff;
-  --color-active: #22c55e;
-  --color-inactive: #94a3b8;
-  --color-bg-main: #ffffff;
-  --color-bg-soft: #f8fafc;
-  --color-danger: #ef4444;
-
+  --color-brand: var(--color-indigo-500);
   --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  --animate-glow: glow 3s infinite ease-in-out;
+
+  @keyframes glow {
+    0%,
+    100% {
+      box-shadow: 0 0 calc(var(--spacing) * 3) color-mix(in oklab, var(--color-brand) 20%, transparent);
+    }
+
+    50% {
+      box-shadow: 0 0 calc(var(--spacing) * 3) calc(var(--spacing) * 2)
+        color-mix(in oklab, var(--color-brand) 30%, transparent);
+    }
+  }
 }
 
 @layer base {
   body {
-    @apply font-sans antialiased text-slate-800 bg-bg-soft;
+    @apply font-sans antialiased text-slate-800 bg-slate-50;
   }
-}
-
-.main-action-btn {
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.05),
-    0 2px 4px -2px rgb(0 0 0 / 0.05),
-    inset 0 2px 4px 0 rgb(255 255 255 / 0.05);
 }
