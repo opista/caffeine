@@ -2,6 +2,11 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import browser from "webextension-polyfill";
 import { WakeLockManager } from "./wake-lock-manager";
 import { MessageType, ErrorCode } from "../types";
+import { showToast } from "./show-toast";
+
+vi.mock("./show-toast", () => ({
+  showToast: vi.fn(),
+}));
 
 const mockBrowser = vi.mocked(browser, true);
 const mockSender = {} as browser.Runtime.MessageSender;
@@ -48,10 +53,12 @@ describe("WakeLockManager", () => {
 
     mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
       if (msg.type === MessageType.GET_PLATFORM_INFO) {
-        return { os: "linux" };
+        return { os: "linux", isManual: false };
       }
       return undefined;
     });
+
+    vi.mocked(showToast).mockClear();
 
     wakeLockManager = new WakeLockManager();
   });
@@ -236,5 +243,37 @@ describe("WakeLockManager", () => {
       type: MessageType.STATUS_UPDATE,
       status: "inactive",
     });
+  });
+
+  it("should show toast on Android only if isManual is true", async () => {
+    mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
+      if (msg.type === MessageType.GET_PLATFORM_INFO) {
+        return { os: "android", isManual: true };
+      }
+      return undefined;
+    });
+
+    wakeLockManager = new WakeLockManager();
+    await wakeLockManager.start();
+
+    await vi.waitUntil(() => requestMock.mock.calls.length > 0);
+
+    expect(showToast).toHaveBeenCalledWith("☕ Caffeine active", "success");
+  });
+
+  it("should NOT show toast on Android if isManual is false", async () => {
+    mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
+      if (msg.type === MessageType.GET_PLATFORM_INFO) {
+        return { os: "android", isManual: false };
+      }
+      return undefined;
+    });
+
+    wakeLockManager = new WakeLockManager();
+    await wakeLockManager.start();
+
+    await vi.waitUntil(() => requestMock.mock.calls.length > 0);
+
+    expect(showToast).not.toHaveBeenCalled();
   });
 });

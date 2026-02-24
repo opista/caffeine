@@ -12,6 +12,7 @@ export class BackgroundManager {
   private isInitialized = false;
   private isProcessing = false;
   private lastActiveWebTabId: number | undefined;
+  private manualTriggerTabIds = new Set<number>();
 
   constructor(
     private sessionManager: SessionManager = new SessionManager(),
@@ -44,7 +45,7 @@ export class BackgroundManager {
       case MessageType.TOGGLE_SESSION:
         return this.handleToggleSession();
       case MessageType.GET_PLATFORM_INFO:
-        return this.handleGetPlatformInfo();
+        return this.handleGetPlatformInfo(senderTabId);
       case MessageType.ADD_RULE:
         return this.ruleManager.addRule(message.ruleType, message.url);
       case MessageType.REMOVE_RULE:
@@ -107,8 +108,10 @@ export class BackgroundManager {
       }
 
       try {
+        this.manualTriggerTabIds.add(activeTabId);
         await injectContentScript(activeTabId);
       } catch (e: unknown) {
+        this.manualTriggerTabIds.delete(activeTabId);
         const message = e instanceof Error ? e.message : "Unknown error";
         await this.sessionManager.set(activeTabId, "error", message);
         updateBadge(activeTabId, "error");
@@ -120,9 +123,11 @@ export class BackgroundManager {
     }
   }
 
-  private async handleGetPlatformInfo() {
+  private async handleGetPlatformInfo(tabId?: number) {
     const os = await getOperatingSystem();
-    return { os };
+    const isManual = tabId ? this.manualTriggerTabIds.has(tabId) : false;
+    if (tabId) this.manualTriggerTabIds.delete(tabId);
+    return { os, isManual };
   }
 
   private async handleGetRuleForTab() {

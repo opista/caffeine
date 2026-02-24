@@ -49,7 +49,7 @@ export interface MessageResponses {
   [MessageType.TOGGLE_SESSION]: { status: LockStatus; error?: ErrorCode | string };
   [MessageType.GET_STATUS]: { status: LockStatus; error?: ErrorCode | string };
   [MessageType.STATUS_UPDATE]: void;
-  [MessageType.GET_PLATFORM_INFO]: { os: string | null };
+  [MessageType.GET_PLATFORM_INFO]: { os: string | null; isManual?: boolean };
   [MessageType.ACQUIRE_LOCK]: void;
   [MessageType.RELEASE_LOCK]: void;
   [MessageType.ADD_RULE]: void;

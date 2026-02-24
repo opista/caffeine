@@ -7,6 +7,7 @@ export class WakeLockManager {
   private isEnabled = false;
   private isSupported = false;
   private platformInitialized = false;
+  private isManual = false;
   private wakeLock: WakeLockSentinel | null = null;
 
   constructor() {
@@ -25,9 +26,10 @@ export class WakeLockManager {
 
     try {
       const response = await browser.runtime.sendMessage({ type: MessageType.GET_PLATFORM_INFO });
-      if (response && response.os) {
+      if (response?.os) {
         this.isAndroid = response.os === "android";
       }
+      this.isManual = response?.isManual ?? false;
     } finally {
       this.platformInitialized = true;
     }
@@ -76,7 +78,8 @@ export class WakeLockManager {
       this.wakeLock = await navigator.wakeLock.request("screen");
       this.wakeLock?.addEventListener("release", this.handleLockRelease);
       this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "active" });
-      if (this.isAndroid) showToast("☕ Caffeine active", "success");
+      if (this.isAndroid && this.isManual) showToast("☕ Caffeine active", "success");
+      this.isManual = false; // Reset after first use
     } catch (err: unknown) {
       // On Android, the popup steals focus from the page, causing
       // NotAllowedError on the initial request. The focus listener
