@@ -15,6 +15,11 @@ describe("updateBadge", () => {
     vi.clearAllMocks();
   });
 
+  it("should return early if tabId is <= 0", async () => {
+    await updateBadge(-1, "active");
+    expect(mockBrowser.action.setBadgeText).not.toHaveBeenCalled();
+  });
+
   it.each([
     { status: "active", os: "mac", text: "ON", color: "#2ecc71" },
     { status: "active", os: "android", text: "ACTIVE", color: "#2ecc71" },

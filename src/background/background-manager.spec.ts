@@ -93,6 +93,20 @@ describe("BackgroundManager", () => {
           expect(response).toEqual({ status: "pending" });
         });
 
+        it("should return error if tab is non-HTTPS", async () => {
+          mockBrowser.tabs.get.mockResolvedValue({ ...mockTab, url: "http://example.com" } as any);
+          mockSessionManager.get.mockResolvedValue({ status: "inactive" });
+          const response = await sendMessage({ type: MessageType.TOGGLE_SESSION });
+
+          expect(response).toEqual({ status: "error", error: "Wake Lock requires a secure (HTTPS) page" });
+          expect(mockSessionManager.set).toHaveBeenCalledWith(
+            mockTabId,
+            "error",
+            "Wake Lock requires a secure (HTTPS) page",
+          );
+          expect(updateBadge).toHaveBeenCalledWith(mockTabId, "error");
+        });
+
         it("should deactivate session if currently active and handle error", async () => {
           mockSessionManager.get.mockResolvedValue({ status: "active" });
           mockBrowser.tabs.sendMessage.mockRejectedValue(new Error("Connection failed"));
@@ -159,6 +173,28 @@ describe("BackgroundManager", () => {
           expect(mockBrowser.permissions.contains).toHaveBeenCalledWith({ origins: ["*://*.example.com/*"] });
           expect(response).toEqual(true);
         });
+      });
+    });
+
+    describe("handleTabActivated", () => {
+      it("should set lastActiveWebTabId if tab is http", async () => {
+        const onActivated = mockBrowser.tabs.onActivated.addListener.mock.calls[0][0];
+
+        mockBrowser.tabs.get.mockResolvedValue({ id: 999, url: "https://example.com" } as any);
+        await onActivated({ tabId: 999, windowId: 1 });
+
+        // Change active tab query to return an unsupported url
+        mockBrowser.tabs.query.mockResolvedValue([{ url: "chrome://extensions" }] as browser.Tabs.Tab[]);
+
+        // Now trigger GET_STATUS, which uses getActiveTabId()
+        // If lastActiveWebTabId is 999, it will use 999, else it will return inactive
+        mockSessionManager.get.mockResolvedValue({ status: "active" });
+
+        const listener = (mockBrowser.runtime.onMessage.addListener as any).mock.calls[0][0];
+        const response = await listener({ type: MessageType.GET_STATUS }, mockMessageSender, mockSendResponse);
+
+        expect(mockSessionManager.get).toHaveBeenCalledWith(999);
+        expect(response).toEqual({ status: "active" });
       });
     });
 

@@ -135,6 +135,23 @@ describe("WakeLockManager", () => {
     expect(requestMock).toHaveBeenCalledTimes(2);
   });
 
+  it("should handle non-secure context", async () => {
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: false,
+    });
+
+    await wakeLockManager.start();
+
+    await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
+
+    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+      type: MessageType.STATUS_UPDATE,
+      status: "error",
+      error: "Wake Lock requires a secure (HTTPS) connection",
+    });
+  });
+
   it("should handle wake lock not supported", async () => {
     Object.defineProperty(navigator, "wakeLock", {
       configurable: true,
@@ -164,6 +181,46 @@ describe("WakeLockManager", () => {
       type: MessageType.STATUS_UPDATE,
       status: "error",
       error: "System blocked wake lock (check Battery Saver)",
+    });
+  });
+
+  it("should silently bypass initial NotAllowedError on Android and retry on focus", async () => {
+    mockBrowser.runtime.sendMessage.mockImplementation(async (msg: any) => {
+      if (msg.type === MessageType.GET_PLATFORM_INFO) {
+        return { os: "android" };
+      }
+      return undefined;
+    });
+
+    wakeLockManager = new WakeLockManager();
+
+    requestMock.mockRejectedValueOnce({ name: "NotAllowedError" });
+
+    mockBrowser.runtime.sendMessage.mockClear();
+
+    await wakeLockManager.start();
+
+    // Verify STATUS_UPDATE was NOT sent
+    expect(mockBrowser.runtime.sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({ status: "error" }));
+
+    // Now simulate focus
+    const wakeLockSentinel = {
+      release: releaseMock,
+      addEventListener: addEventListenerMock,
+      removeEventListener: vi.fn(),
+      released: false,
+      type: "screen" as const,
+      onrelease: null,
+    };
+    requestMock.mockResolvedValueOnce(wakeLockSentinel);
+
+    window.dispatchEvent(new Event("focus"));
+
+    await vi.waitUntil(() => mockBrowser.runtime.sendMessage.mock.calls.length > 0);
+
+    expect(mockBrowser.runtime.sendMessage).toHaveBeenCalledWith({
+      type: MessageType.STATUS_UPDATE,
+      status: "active",
     });
   });
 
