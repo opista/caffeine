@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "wxt";
+import pkg from "./package.json";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -7,7 +8,7 @@ export default defineConfig({
     return {
       name: "Caffeine: Keep your screen awake",
       description: "Keep your screen awake",
-      version: "1.0.0",
+      version: pkg.version,
       permissions: ["activeTab", "scripting", "storage", "tabs"],
       optional_host_permissions: ["*://*/*"],
       action: {
