@@ -1,0 +1,139 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { sendExtensionMessage } from "../utils/send-extension-message";
+import { browser, type Browser } from "wxt/browser";
+import { useWakeLock } from "./use-wake-lock";
+import { renderHook } from "@testing-library/react";
+import { act } from "react";
+import { MessageType } from "../../../types";
+
+vi.mock("../utils/send-extension-message");
+
+const mockBrowser = vi.mocked(browser, true);
+
+const mockSendExtensionMessage = vi.mocked(sendExtensionMessage);
+
+const mockSender = {} as Browser.runtime.MessageSender;
+const mockSendResponse = vi.fn();
+
+describe("useWakeLock", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    vi.stubGlobal("close", vi.fn());
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it("should initialize with status from background", async () => {
+    mockSendExtensionMessage.mockResolvedValue({ status: "active" });
+    const { result } = renderHook(() => useWakeLock(false));
+
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("active");
+    });
+    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: MessageType.GET_STATUS });
+  });
+
+  it("should update status when receiving STATUS_UPDATE message", async () => {
+    let messageCallback: (msg: any, sender: Browser.runtime.MessageSender, sendResponse: () => void) => void;
+    mockBrowser.runtime.onMessage.addListener.mockImplementation((cb) => {
+      messageCallback = cb;
+    });
+
+    const { result } = renderHook(() => useWakeLock(false));
+
+    act(() => {
+      if (messageCallback) {
+        messageCallback({ type: MessageType.STATUS_UPDATE, status: "pending" }, mockSender, mockSendResponse);
+      }
+    });
+
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("pending");
+    });
+  });
+
+  it("should clean up listener on unmount", () => {
+    const { unmount } = renderHook(() => useWakeLock(false));
+    unmount();
+    expect(mockBrowser.runtime.onMessage.removeListener).toHaveBeenCalled();
+  });
+
+  it("should handle toggle session", async () => {
+    mockSendExtensionMessage.mockResolvedValue({ status: "active" }); // Initial check
+    const { result } = renderHook(() => useWakeLock(false));
+
+    // Reset mock to return new status on toggle
+    mockSendExtensionMessage.mockResolvedValue({ status: "inactive" });
+
+    await act(async () => {
+      await result.current.toggleSession();
+    });
+
+    expect(mockSendExtensionMessage).toHaveBeenCalledWith({ type: MessageType.TOGGLE_SESSION });
+    expect(result.current.status).toBe("inactive");
+  });
+
+  it("should close window on android when pending", async () => {
+    mockSendExtensionMessage.mockResolvedValue({ status: "pending" });
+    const { result } = renderHook(() => useWakeLock(true)); // isAndroid = true
+
+    // Initial status check
+    act(() => {
+      // flush initial effect
+    });
+
+    await act(async () => {
+      await result.current.toggleSession();
+    });
+
+    expect(result.current.status).toBe("pending");
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(window.close).toHaveBeenCalled();
+  });
+
+  it("should NOT close window on desktop when pending", async () => {
+    mockSendExtensionMessage.mockResolvedValue({ status: "pending" });
+    const { result } = renderHook(() => useWakeLock(false)); // isAndroid = false
+
+    await act(async () => {
+      await result.current.toggleSession();
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(window.close).not.toHaveBeenCalled();
+  });
+
+  it("should handle error during toggle session", async () => {
+    mockSendExtensionMessage.mockClear();
+    mockSendExtensionMessage.mockImplementation(async (msg: any) => {
+      if (msg.type === MessageType.GET_STATUS) return { status: "active" };
+      if (msg.type === MessageType.TOGGLE_SESSION) return { status: "error", error: "Test error message" };
+    });
+
+    const { result } = renderHook(() => useWakeLock(false));
+
+    // Wait for initial status to be set
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("active");
+    });
+
+    await act(async () => {
+      await result.current.toggleSession();
+    });
+
+    expect(result.current.status).toBe("error");
+    expect(result.current.errorMsg).toBe("Test error message");
+  });
+});
