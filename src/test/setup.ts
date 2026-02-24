@@ -1,4 +1,9 @@
-import { vi } from "vitest";
+import { vi, afterEach } from "vitest";
+import { cleanup } from "@testing-library/react";
+
+afterEach(() => {
+  cleanup();
+});
 
 (global as any).IS_REACT_ACT_ENVIRONMENT = true;
 

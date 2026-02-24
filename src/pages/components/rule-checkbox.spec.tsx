@@ -1,35 +1,30 @@
 import { describe, it, expect, vi } from "vitest";
-import { act } from "react";
 import { RuleCheckbox } from "./rule-checkbox";
-import { render } from "../../test/utils";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 describe("RuleCheckbox", () => {
   it("renders correctly with given props", () => {
-    const { container } = render(
+    render(
       <RuleCheckbox title="Keep awake for this URL" description="example.com" checked={false} onClick={vi.fn()} />,
     );
 
-    expect(container.textContent).toContain("Keep awake for this URL");
-    expect(container.textContent).toContain("example.com");
-    const input = container.querySelector("input");
-    expect(input?.checked).toBe(false);
+    expect(screen.getByText("Keep awake for this URL")).toBeTruthy();
+    expect(screen.getByText("example.com")).toBeTruthy();
+    const input = screen.getByRole("checkbox");
+    expect((input as HTMLInputElement).checked).toBe(false);
   });
 
   it("triggers onClick when clicked", () => {
     const onClickMock = vi.fn();
-    const { container } = render(
-      <RuleCheckbox title="Test Title" description="Test Description" checked={true} onClick={onClickMock} />,
-    );
+    render(<RuleCheckbox title="Test Title" description="Test Description" checked={true} onClick={onClickMock} />);
 
-    const label = container.querySelector("label");
+    const label = screen.getByText("Test Title").closest("label") as HTMLLabelElement;
     expect(label).toBeTruthy();
 
-    act(() => {
-      label?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    fireEvent.click(label);
 
     expect(onClickMock).toHaveBeenCalled();
-    const input = container.querySelector("input");
-    expect(input?.checked).toBe(true);
+    const input = screen.getByRole("checkbox");
+    expect((input as HTMLInputElement).checked).toBe(true);
   });
 });

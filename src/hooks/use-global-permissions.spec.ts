@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { renderHook } from "../test/utils";
+import { renderHook } from "@testing-library/react";
 import { act } from "react";
 import { useGlobalPermissions } from "./use-global-permissions";
 import browser from "webextension-polyfill";

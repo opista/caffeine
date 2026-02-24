@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, Mock } from "vitest";
-import { act } from "react";
 import { GlobalToggle } from "./global-toggle";
 import { useGlobalPermissions } from "../../hooks/use-global-permissions";
-import { render } from "../../test/utils";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 vi.mock("../../hooks/use-global-permissions");
 
@@ -24,10 +23,10 @@ describe("GlobalToggle", () => {
       toggleGlobalPermission: vi.fn(),
     });
 
-    const { container } = render(<GlobalToggle />);
+    render(<GlobalToggle />);
 
-    expect(container.textContent).toContain("Advanced permissions are required");
-    expect(container.textContent).toContain("Enable Access to All Websites");
+    expect(screen.getByText(/Advanced permissions are required/i)).toBeTruthy();
+    expect(screen.getByText(/Enable Access to All Websites/i)).toBeTruthy();
   });
 
   it("should call toggleGlobalPermission when the button is clicked", () => {
@@ -37,14 +36,10 @@ describe("GlobalToggle", () => {
       toggleGlobalPermission: toggleGlobalPermissionMock,
     });
 
-    const { container } = render(<GlobalToggle />);
+    render(<GlobalToggle />);
 
-    const button = container.querySelector("button");
-    expect(button).toBeTruthy();
-
-    act(() => {
-      button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    const button = screen.getByRole("button", { name: /Enable Access to All Websites/i });
+    fireEvent.click(button);
 
     expect(toggleGlobalPermissionMock).toHaveBeenCalled();
   });

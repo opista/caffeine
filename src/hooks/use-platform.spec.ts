@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import browser from "webextension-polyfill";
 import { usePlatform } from "./use-platform";
-import { renderHook } from "../test/utils";
+import { renderHook } from "@testing-library/react";
 
 const mockBrowser = vi.mocked(browser, true);
 

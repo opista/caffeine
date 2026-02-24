@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 import browser from "webextension-polyfill";
 import { useWakeLock } from "./use-wake-lock";
-import { renderHook } from "../test/utils";
+import { renderHook, waitFor } from "@testing-library/react";
 import { act } from "react";
 import { MessageType } from "../types";
 

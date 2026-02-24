@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
-import { act } from "react";
 import browser from "webextension-polyfill";
 import { WakeToggle } from "./wake-toggle";
 import { useActiveTab } from "../../hooks/use-active-tab";
 import { usePlatform } from "../../hooks/use-platform";
 import { useWakeLock } from "../../hooks/use-wake-lock";
-import { render } from "../../test/utils";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 // Mock hooks
 vi.mock("../../hooks/use-active-tab");
@@ -35,19 +34,18 @@ describe("WakeToggle", () => {
   });
 
   it("renders correctly in inactive state", () => {
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    expect(container.textContent).toContain("Wake Lock is Inactive");
-    expect(container.textContent).toContain("Tap to keep screen awake");
+    expect(screen.getByText("Wake Lock is Inactive")).toBeTruthy();
+    expect(screen.getByText("Tap to keep screen awake")).toBeTruthy();
 
-    const input = container.querySelector("input");
+    const input = screen.getByRole("switch") as HTMLInputElement;
     expect(input).toBeDefined();
-    expect(input?.checked).toBe(false);
-    expect(input?.getAttribute("aria-checked")).toBe("false");
-    expect(input?.getAttribute("role")).toBe("switch");
+    expect(input.checked).toBe(false);
+    expect(input.getAttribute("aria-checked")).toBe("false");
 
     // Check styling for inactive state (not active, not pending)
-    const card = container.querySelector("label");
+    const card = input.closest("label");
     expect(card?.className).toContain("shadow-slate-200/50");
     expect(card?.className).not.toContain("shadow-brand/10");
   });
@@ -59,17 +57,17 @@ describe("WakeToggle", () => {
       toggleSession: mockToggleSession,
     });
 
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    expect(container.textContent).toContain("Wake Lock is Active");
-    expect(container.textContent).toContain("Preventing sleep automatically");
+    expect(screen.getByText("Wake Lock is Active")).toBeTruthy();
+    expect(screen.getByText("Preventing sleep automatically")).toBeTruthy();
 
-    const input = container.querySelector("input");
-    expect(input?.checked).toBe(true);
-    expect(input?.getAttribute("aria-checked")).toBe("true");
+    const input = screen.getByRole("switch") as HTMLInputElement;
+    expect(input.checked).toBe(true);
+    expect(input.getAttribute("aria-checked")).toBe("true");
 
     // Check styling for active state
-    const card = container.querySelector("label");
+    const card = input.closest("label");
     expect(card?.className).toContain("shadow-brand/10");
   });
 
@@ -80,15 +78,15 @@ describe("WakeToggle", () => {
       toggleSession: mockToggleSession,
     });
 
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    expect(container.textContent).toContain("Activating...");
+    expect(screen.getByText("Activating...")).toBeTruthy();
 
-    const input = container.querySelector("input");
-    expect(input?.disabled).toBe(true);
+    const input = screen.getByRole("switch") as HTMLInputElement;
+    expect(input.disabled).toBe(true);
 
     // Check styling for pending state
-    const card = container.querySelector("label");
+    const card = input.closest("label");
     expect(card?.className).toContain("shadow-amber-200/50");
   });
 
@@ -97,13 +95,13 @@ describe("WakeToggle", () => {
       isSupportedUrl: false,
     });
 
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    const input = container.querySelector("input");
-    expect(input?.disabled).toBe(true);
+    const input = screen.getByRole("switch") as HTMLInputElement;
+    expect(input.disabled).toBe(true);
 
     // Check styling for unsupported state
-    const card = container.querySelector("label");
+    const card = input.closest("label");
     expect(card?.className).toContain("opacity-60");
     expect(card?.className).toContain("cursor-not-allowed");
   });
@@ -116,25 +114,21 @@ describe("WakeToggle", () => {
       toggleSession: mockToggleSession,
     });
 
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    expect(container.textContent).toContain("System prevented Wake Lock");
-    expect(container.textContent).toContain(errorMsg);
+    expect(screen.getAllByText("System prevented Wake Lock").length).toBe(2);
+    expect(screen.getByText(errorMsg)).toBeTruthy();
 
     // Check "Fix Issue" button exists
-    const fixButton = container.querySelector("button");
+    const fixButton = screen.getByRole("button", { name: /Fix Issue/i });
     expect(fixButton).toBeDefined();
-    expect(fixButton?.textContent).toContain("Fix Issue");
   });
 
   it("calls toggleSession when clicked", () => {
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    const input = container.querySelector("input");
-    expect(input).not.toBeNull();
-    act(() => {
-      input!.click();
-    });
+    const input = screen.getByRole("switch");
+    fireEvent.click(input);
 
     expect(mockToggleSession).toHaveBeenCalledTimes(1);
   });
@@ -146,13 +140,10 @@ describe("WakeToggle", () => {
       toggleSession: mockToggleSession,
     });
 
-    const { container } = render(<WakeToggle />);
+    render(<WakeToggle />);
 
-    const fixButton = container.querySelector("button");
-    expect(fixButton).not.toBeNull();
-    act(() => {
-      fixButton!.click();
-    });
+    const fixButton = screen.getByRole("button", { name: /Fix Issue/i });
+    fireEvent.click(fixButton);
 
     expect(browser.tabs.create).toHaveBeenCalledWith({
       url: "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API",
