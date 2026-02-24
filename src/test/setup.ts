@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-global.IS_REACT_ACT_ENVIRONMENT = true;
+(global as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("webextension-polyfill", () => ({
   default: {
@@ -13,6 +13,7 @@ vi.mock("webextension-polyfill", () => ({
       getPlatformInfo: vi.fn().mockResolvedValue({ os: "linux", arch: "x86-64" }),
     },
     tabs: {
+      create: vi.fn().mockResolvedValue({}),
       get: vi.fn().mockResolvedValue({}),
       onRemoved: {
         addListener: vi.fn(),
@@ -53,4 +54,5 @@ vi.mock("webextension-polyfill", () => ({
       contains: vi.fn().mockResolvedValue(true),
       remove: vi.fn().mockResolvedValue(true),
     },
+  }
 }));
