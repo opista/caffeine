@@ -13,7 +13,6 @@ vi.mock("./session-manager");
 vi.mock("./rules/rule-manager");
 vi.mock("./update-badge");
 vi.mock("./inject-content-script");
-vi.mock("./get-operating-system");
 
 const mockBrowser = vi.mocked(browser, true);
 const mockInjectContentScript = vi.mocked(injectContentScript);

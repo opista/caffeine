@@ -4,8 +4,6 @@ import { updateBadge } from "./update-badge";
 import { LockStatus } from "../types";
 import { getOperatingSystem } from "./get-operating-system";
 
-/* eslint-disable jest/no-conditional-expect */
-
 const mockBrowser = vi.mocked(browser, true);
 
 vi.mock("./get-operating-system");
@@ -17,7 +15,6 @@ describe("updateBadge", () => {
     vi.clearAllMocks();
   });
 
-  // eslint-disable-next-line jest/no-conditional-expect
   it.each([
     { status: "active", os: "mac", text: "ON", color: "#2ecc71" },
     { status: "active", os: "android", text: "ACTIVE", color: "#2ecc71" },

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import browser from "webextension-polyfill";
-import { LockStatus, MessageType } from "../types";
+import { ExtensionMessage, LockStatus, MessageType } from "../types";
 import { sendExtensionMessage } from "../pages/utils/send-extension-message";
 
 export const useWakeLock = (isAndroid: boolean) => {
@@ -15,7 +15,7 @@ export const useWakeLock = (isAndroid: boolean) => {
       }
     });
 
-    const messageHandler = (message: any) => {
+    const messageHandler = (message: ExtensionMessage) => {
       if (message.type === MessageType.STATUS_UPDATE && message.status) {
         setStatus(message.status);
         if (message.error) setErrorMsg(message.error);

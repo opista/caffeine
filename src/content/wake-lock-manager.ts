@@ -77,17 +77,18 @@ export class WakeLockManager {
       this.wakeLock?.addEventListener("release", this.handleLockRelease);
       this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "active" });
       if (this.isAndroid) showToast("☕ Caffeine active", "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       // On Android, the popup steals focus from the page, causing
       // NotAllowedError on the initial request. The focus listener
       // will retry when the popup closes and focus returns.
-      if (err.name === "NotAllowedError" && this.isAndroid && !this.wakeLock) {
+      const errorName = err instanceof Error ? err.name : (err as any)?.name;
+      if (errorName === "NotAllowedError" && this.isAndroid && !this.wakeLock) {
         return;
       }
       const errorMsg =
-        err.name === "NotAllowedError"
+        errorName === "NotAllowedError"
           ? "System blocked wake lock (check Battery Saver)"
-          : err.name === "NotSupportedError"
+          : errorName === "NotSupportedError"
             ? "Device does not support wake lock"
             : "Unknown error";
       this.sendMessage({ type: MessageType.STATUS_UPDATE, status: "error", error: errorMsg });
