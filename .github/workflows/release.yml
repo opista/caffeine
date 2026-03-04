@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+
+jobs:
+  build-and-upload:
+    name: Build and upload extensions
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and zip extensions
+        run: |
+          pnpm zip
+          pnpm zip:firefox
+
+      - name: Upload extension assets to release
+        run: gh release upload "${{ github.event.release.tag_name }}" .output/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
