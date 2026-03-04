@@ -1,3 +1,8 @@
+[![Mozilla Add-on Version](https://img.shields.io/amo/v/caffeine-keep-screen-awake?style=for-the-badge&color=%23615fff)](https://addons.mozilla.org/en-GB/firefox/addon/caffeine-keep-screen-awake/)
+[![GitHub Release](https://img.shields.io/github/v/release/metacurb/caffeine?style=for-the-badge)](https://github.com/metacurb/caffeine/releases)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/metacurb/caffeine/ci.yml?style=for-the-badge)](https://github.com/metacurb/caffeine/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/metacurb/caffeine?style=for-the-badge)](https://github.com/metacurb/caffeine/blob/main/LICENSE)
+
 # Caffeine: Keep your screen awake
 
 A browser extension that prevents your screen from dimming or going to sleep, using the modern [Screen Wake Lock API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API).
@@ -18,7 +23,7 @@ A browser extension that prevents your screen from dimming or going to sleep, us
 
 ### Required Programs
 
-- **Node.js**: version `v22.x` or later
+- **Node.js**: version `v24.x` or later
   - [Install Node.js](https://nodejs.org/)
 - **pnpm**: version `v10.x` or later
   - [Install pnpm](https://pnpm.io/installation)
