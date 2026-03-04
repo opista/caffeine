@@ -52,5 +52,10 @@
       "oxfmt --write",
       "oxlint --fix -c oxlint.json"
     ]
-  }
+  },
+  "engines": {
+    "node": "^24.0.0",
+    "pnpm": "^10.0.0"
+  },
+  "packageManager": "pnpm@10.29.3"
 }
