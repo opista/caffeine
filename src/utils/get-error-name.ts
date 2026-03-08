@@ -7,9 +7,9 @@ export function getErrorName(error: unknown): string | undefined {
     typeof error === "object" &&
     error !== null &&
     "name" in error &&
-    typeof error.name === "string"
+    typeof (error as Record<string, unknown>).name === "string"
   ) {
-    return error.name;
+    return (error as Record<string, unknown>).name as string;
   }
 
   return undefined;
