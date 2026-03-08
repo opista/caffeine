@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useRules } from "./use-rules";
 import { MessageType } from "../../../types";
 import { sendExtensionMessage } from "../utils/send-extension-message";
@@ -95,9 +95,12 @@ describe("useRules", () => {
 
     const { result } = renderHook(() => useRules(new URL("https://example.com/page")));
 
-    await vi.waitUntil(() => mockSendExtensionMessage.mock.calls.length > 0);
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
 
     expect(result.current.ruleState).toBeNull();
+    expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to fetch rules:", new Error("Network error"));
 
     consoleErrorSpy.mockRestore();
   });
