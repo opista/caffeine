@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useRules } from "./use-rules";
 import { MessageType } from "../../../types";
 import { sendExtensionMessage } from "../utils/send-extension-message";
@@ -87,6 +87,22 @@ describe("useRules", () => {
       ruleType: "domain",
       url: "https://example.com/page",
     });
+  });
+
+  it("should handle error when fetching rules fails", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSendExtensionMessage.mockRejectedValue(new Error("Network error"));
+
+    const { result } = renderHook(() => useRules(new URL("https://example.com/page")));
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
+    expect(result.current.ruleState).toBeNull();
+    expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to fetch rules:", new Error("Network error"));
+
+    consoleErrorSpy.mockRestore();
   });
 
   it("should toggle page rule independently of domain rule", async () => {
