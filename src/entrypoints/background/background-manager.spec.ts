@@ -124,6 +124,20 @@ describe("BackgroundManager", () => {
           expect(mockInjectContentScript).toHaveBeenCalledWith(mockTabId);
           expect(response2).toEqual({ status: "pending" });
         });
+
+        it("should inactivate session manually and handle error when RELEASE_LOCK fails", async () => {
+          mockSessionManager.get.mockResolvedValue({ status: "active" });
+          mockBrowser.tabs.sendMessage.mockRejectedValue(new Error("Failed to send message"));
+
+          const response = await sendMessage({ type: MessageType.TOGGLE_SESSION });
+
+          expect(mockBrowser.tabs.sendMessage).toHaveBeenCalledWith(mockTabId, {
+            type: MessageType.RELEASE_LOCK,
+          });
+          expect(mockSessionManager.delete).toHaveBeenCalledWith(mockTabId);
+          expect(updateBadge).toHaveBeenCalledWith(mockTabId, "inactive");
+          expect(response).toEqual({ status: "inactive" });
+        });
       });
 
       // New tests for Rules
