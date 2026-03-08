@@ -89,6 +89,19 @@ describe("useRules", () => {
     });
   });
 
+  it("should handle error when fetching rules fails", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSendExtensionMessage.mockRejectedValue(new Error("Network error"));
+
+    const { result } = renderHook(() => useRules(new URL("https://example.com/page")));
+
+    await vi.waitUntil(() => mockSendExtensionMessage.mock.calls.length > 0);
+
+    expect(result.current.ruleState).toBeNull();
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it("should toggle page rule independently of domain rule", async () => {
     mockSendExtensionMessage.mockResolvedValue({
       ruleState: { hasPageRule: true, hasDomainRule: true, rootDomain: "example.com" },
