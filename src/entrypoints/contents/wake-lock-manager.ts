@@ -1,6 +1,7 @@
 import { ExtensionMessage, MessageType, ErrorCode } from "../../types";
 import { browser } from "wxt/browser";
 import { showToast } from "./show-toast";
+import { getErrorName } from "../../utils/get-error-name";
 
 export class WakeLockManager {
   private isAndroid = false;
@@ -88,7 +89,7 @@ export class WakeLockManager {
       // On Android, the popup steals focus from the page, causing
       // NotAllowedError on the initial request. The focus listener
       // will retry when the popup closes and focus returns.
-      const errorName = err instanceof Error ? err.name : (err as any)?.name;
+      const errorName = getErrorName(err);
       if (errorName === "NotAllowedError" && this.isAndroid && !this.wakeLock) {
         return;
       }
