@@ -29,7 +29,7 @@
     "react-dom": "^19.2.5",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
-    "tldts": "^7.0.24"
+    "tldts": "^7.4.5"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
