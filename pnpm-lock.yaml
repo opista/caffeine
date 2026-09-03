@@ -4146,7 +4146,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@vitejs/plugin-react@6.0.5(vite@8.0.16(@types/node@26.0.1)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.8.3))':
+  '@vitejs/plugin-react@6.0.5(vite@8.0.16(@types/node@26.4.0)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.8.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.0.16(@types/node@26.4.0)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.8.3)
