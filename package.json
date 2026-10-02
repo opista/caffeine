@@ -44,7 +44,7 @@
     "oxlint": "^1.72.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2",
-    "web-ext": "^10.6.0",
+    "web-ext": "^10.7.0",
     "wxt": "^0.20.26"
   },
   "lint-staged": {
