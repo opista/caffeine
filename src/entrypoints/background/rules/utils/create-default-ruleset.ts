@@ -1,4 +1,4 @@
-import { DomainRuleset } from "../types";
+import type { DomainRuleset } from "../types";
 
 export const createDefaultRuleset = (): DomainRuleset => ({
   createdAt: Date.now(),
