@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { browser } from "wxt/browser";
-import { ExtensionMessage, LockStatus, MessageType } from "../../../types";
+import { MessageType, type ExtensionMessage, type LockStatus } from "../../../types";
 import { sendExtensionMessage } from "../utils/send-extension-message";
 
 export const useWakeLock = (isAndroid: boolean) => {

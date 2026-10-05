@@ -1,5 +1,5 @@
 import { browser, type Browser } from "wxt/browser";
-import { ExtensionMessage, LockStatus, MessageType, ErrorCode } from "../../types";
+import { MessageType, ErrorCode, type ExtensionMessage, type LockStatus } from "../../types";
 import { updateBadge } from "./update-badge";
 import { injectContentScript } from "./inject-content-script";
 import { SessionManager } from "./session-manager";

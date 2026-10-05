@@ -1,4 +1,4 @@
-import { ExtensionMessage, MessageType, ErrorCode } from "../../types";
+import { MessageType, ErrorCode, type ExtensionMessage } from "../../types";
 import { browser } from "wxt/browser";
 import { showToast } from "./show-toast";
 import { getErrorName } from "../../utils/get-error-name";

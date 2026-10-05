@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { RuleState, MessageType } from "../../../types";
+import { MessageType, type RuleState } from "../../../types";
 import { sendExtensionMessage } from "../utils/send-extension-message";
 
 export const useRules = (url: URL | null) => {

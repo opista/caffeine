@@ -1,7 +1,7 @@
 import { browser } from "wxt/browser";
 import { getRootDomain } from "../../../utils/get-root-domain";
-import { DomainRuleset } from "./types";
-import { RuleState, RuleType } from "../../../types";
+import type { DomainRuleset } from "./types";
+import type { RuleState, RuleType } from "../../../types";
 import { createDefaultRuleset } from "./utils/create-default-ruleset";
 
 export class RuleManager {

@@ -45,7 +45,7 @@
     "typescript": "^7.0.2",
     "vitest": "^5.0.2",
     "web-ext": "^10.7.0",
-    "wxt": "^0.20.26"
+    "wxt": "^0.21.4"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,scss,md}": [

@@ -1,5 +1,5 @@
 import { browser } from "wxt/browser";
-import { LockStatus } from "../../types";
+import type { LockStatus } from "../../types";
 
 export interface SessionState {
   status: LockStatus;

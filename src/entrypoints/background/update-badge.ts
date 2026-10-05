@@ -1,5 +1,5 @@
 import { browser } from "wxt/browser";
-import { LockStatus } from "../../types";
+import type { LockStatus } from "../../types";
 import { getOperatingSystem } from "./get-operating-system";
 
 type BadgeConfig = {

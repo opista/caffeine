@@ -1,4 +1,4 @@
-import { ExtensionMessage, MessageResponses } from "../../../types";
+import type { ExtensionMessage, MessageResponses } from "../../../types";
 import { browser } from "wxt/browser";
 
 export const sendExtensionMessage = async <T extends ExtensionMessage>(
